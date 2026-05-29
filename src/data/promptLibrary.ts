@@ -1,0 +1,426 @@
+/**
+ * Curated prompt cases from the Awesome GPT Image 2 API and Prompts repository.
+ * https://github.com/EvoLinkAI/awesome-gpt-image-2-API-and-Prompts
+ *
+ * Licensed under CC0 1.0 Universal.
+ * All prompts and images are from the original repo — credit to respective authors.
+ */
+
+export interface PromptEntry {
+  id: string;
+  category: string;
+  title: string;
+  imageUrl: string;
+  prompt: string;
+  author: string;
+  authorUrl: string;
+  sourceUrl: string;
+}
+
+const RAW_BASE = "https://raw.githubusercontent.com/EvoLinkAI/awesome-gpt-image-2-API-and-Prompts/main/images";
+const WUYOSCAR_BASE = "https://raw.githubusercontent.com/wuyoscar/GPT-Image2-Skill/main/docs";
+
+export const PROMPT_LIBRARY: PromptEntry[] = [
+  // ─── E-commerce ───
+  {
+    id: "ecom-151",
+    category: "E-commerce",
+    title: "Miniature Diorama Skincare Advertisement",
+    imageUrl: `${RAW_BASE}/poster_case151/output.jpg`,
+    prompt: `A hyper-realistic miniature diorama product advertisement featuring an oversized luxury skincare pump bottle labeled "LUXEVEIL Skin Science - Radiance Nourishing Body Lotion" in cream/beige with a polished gold pump top, placed on a circular platform. Tiny figurine construction workers dressed in yellow coveralls and white hard hats swarm around the bottle climbing scaffolding, painting the bottle with rollers, operating a tower crane, working near industrial tanks and pipework, and unloading a miniature flatbed truck. The scene includes metal scaffolding structures, industrial silos, orange traffic cones, wooden barricades, and storage barrels. The overall color palette is warm beige, cream, gold, and mustard yellow. Studio photography style with soft diffused lighting, no shadows, clean beige background. The concept metaphorically shows workers "crafting" or "building" the perfect lotion. Tilt-shift miniature aesthetic, ultra-detailed, commercial product photography, 8K resolution, photorealistic CGI render.`,
+    author: "@Strength04_X",
+    authorUrl: "https://x.com/Strength04_X",
+    sourceUrl: "https://x.com/Strength04_X/status/2048074514278563949",
+  },
+  {
+    id: "ecom-163",
+    category: "E-commerce",
+    title: "Burger Hero Image & 9-Cell Storyboard",
+    imageUrl: `${RAW_BASE}/ecommerce_case163/output.jpg`,
+    prompt: `Prompt 1: Create a cinematic hero image of a gourmet cheeseburger on a dark stone surface with glossy brioche bun, melted cheese, crisp lettuce, tomato, grilled patty, sauce, realistic texture, appetizing steam, warm side light, shallow depth of field, premium food commercial style, no text/logos/watermark.\n\nPrompt 2: Create a 9-cell hybrid keyframe-to-transition storyboard sheet for a 15-second gourmet burger ad, moving from empty surface to ingredient assembly to final macro hero shot. Use large S cells and smaller T cells, motion arrows, ghosted ingredient positions, steam, sauce trails, and camera push-in icons. Style: premium food commercial, warm lighting, rich texture, appetizing, cinematic, minimal labels only. No logos, no watermark.`,
+    author: "@Gdgtify",
+    authorUrl: "https://x.com/Gdgtify",
+    sourceUrl: "https://x.com/Gdgtify/status/2049449869530775877",
+  },
+  {
+    id: "ecom-160",
+    category: "E-commerce",
+    title: "9-Panel Product TVC Storyboard",
+    imageUrl: `${RAW_BASE}/poster_case160/output.jpg`,
+    prompt: `Using the provided reference image, transform the single casual product photo into a polished e-commerce TVC storyboard board for a 15-second ad in a 9:16 vertical format, presented as a 9-panel grid. Keep the same blue-and-white ceramic ashtray as the product base, but restage it across cinematic advertising shots with warm premium lighting, shallow depth of field, and a refined lifestyle desktop environment. Add a dark storyboard layout with Chinese titles and timing for each panel.`,
+    author: "@Magncsans",
+    authorUrl: "https://x.com/Magncsans",
+    sourceUrl: "https://x.com/Magncsans/status/2047876253898903594",
+  },
+
+  // ─── Ad Creative ───
+  {
+    id: "ad-176-watch",
+    category: "Ad Creative",
+    title: "Luxury Chronograph Watch Ad",
+    imageUrl: `${RAW_BASE}/poster_case144/output.jpg`,
+    prompt: `A dramatic luxury product advertising image for a motorsport-inspired chronograph wristwatch in a dark studio. Center-left foreground, show a single stainless steel chronograph watch standing upright at a slight three-quarter angle, with a black dial, two red-accent subdials, slim silver hour markers, a tachymeter bezel, and visible crown and pushers on the right side. The watch has a black leather strap with bold red stitching along both edges and a sporty premium finish. The scene is set against a deep black background with cinematic red and white horizontal light streaks crossing behind from left to right, suggesting speed and racetrack energy.`,
+    author: "@AlwaveNazca",
+    authorUrl: "https://x.com/AlwaveNazca",
+    sourceUrl: "https://x.com/AlwaveNazca/status/2048147643809865950",
+  },
+  {
+    id: "ad-176-chocolate",
+    category: "Ad Creative",
+    title: "Luxury Chocolate Campaign",
+    imageUrl: `${RAW_BASE}/poster_case169/output.jpg`,
+    prompt: `Create a premium, square (1:1) product advertisement for a fictional luxury chocolate brand called Noirvelle Chocolat, inspired by high-end chocolate brands. The ad should feel like a high-end editorial campaign, combining luxury food photography, refined packaging design, and cinematic lighting. Use matte black wrapper, subtle gold foil, elegant serif typography, and realistic product rendering.`,
+    author: "@SPEEDAI07",
+    authorUrl: "https://x.com/SPEEDAI07",
+    sourceUrl: "https://x.com/SPEEDAI07/status/2049459155086500321",
+  },
+  {
+    id: "ad-178-tropical",
+    category: "Ad Creative",
+    title: "Tropical Product Ad Poster",
+    imageUrl: `${RAW_BASE}/ad-creative_case178/output.jpg`,
+    prompt: `Create a creative commercial advertising poster for [PRODUCT NAME], a [PRODUCT TYPE], inspired by vibrant tropical product campaigns. Place the product as a large hero object on the center-right with realistic glossy reflections, sharp label details, and premium lighting. Add a stylish model sitting beside or slightly in front of the product, naturally interacting with it.`,
+    author: "@AIwithAliya",
+    authorUrl: "https://x.com/AIwithAliya",
+    sourceUrl: "https://x.com/AIwithAliya/status/2054553101236080714",
+  },
+  {
+    id: "ad-180-energy",
+    category: "Ad Creative",
+    title: "Energy Drink Stadium Ad",
+    imageUrl: `${RAW_BASE}/ad-creative_case180/output.jpg`,
+    prompt: `Ultra realistic premium product advertising shot of a sleek aluminum energy drink can standing upright on a wet reflective surface inside a futuristic football stadium at night. The can design features vivid swirling rainbow brushstroke patterns in red, orange, yellow, green, and blue wrapping around the entire can, with a large glossy black and white soccer ball graphic in the center. The can is covered in realistic cold water droplets and condensation, highly detailed metallic texture, cinematic reflections, ultra sharp focus, luxury beverage commercial aesthetic. Background filled with explosive colorful powder smoke clouds bursting dramatically behind the can, combined with glowing football stadium floodlights, floating particles, water splashes, sparks, mist, and bokeh light effects.`,
+    author: "@Shorelyn_",
+    authorUrl: "https://x.com/Shorelyn_",
+    sourceUrl: "https://x.com/Shorelyn_/status/2055570197973799376",
+  },
+  {
+    id: "ad-176-fastfood",
+    category: "Ad Creative",
+    title: "Fast Food Hero Poster",
+    imageUrl: `${RAW_BASE}/ad-creative_case176/output.jpg`,
+    prompt: `A cinematic 9:16 vertical composition featuring a gourmet "Smokey Obsidian" burger. WHAT: A towering burger with a charcoal brioche bun, thick Wagyu beef patty with visible sear marks, melting aged gruyère dripping like lava, and crispy maple-glazed bacon. FEEL: An atmosphere of "Urban Indulgence." Dark, moody lighting with a single warm amber spotlight. Wisps of real hickory smoke curl around the bun. TYPOGRAPHY: Ultra-bold, distressed sans-serif typeface reading "DEFY GRAVITY" in a raw, concrete-texture finish.`,
+    author: "@ShamsAmin56",
+    authorUrl: "https://x.com/ShamsAmin56",
+    sourceUrl: "https://x.com/ShamsAmin56/status/2054238324198625780",
+  },
+
+  // ─── Portrait & Photography ───
+  {
+    id: "portrait-124",
+    category: "Portrait",
+    title: "Convenience Store Neon Portrait",
+    imageUrl: `${RAW_BASE}/portrait_case1/output.jpg`,
+    prompt: `35mm film photography with harsh convenience store fluorescent lighting mixed with colorful neon signs from outside, authentic film grain, high contrast, slight color cast, cinematic street editorial style, intimate medium shot, early 20s sexy Chinese female idol with ultra-realistic delicate refined Chinese features, seductive almond-shaped fox eyes with natural double eyelids, high nose bridge, small sharp V-shaped jawline, flawless porcelain skin with cool ivory undertone and visible specular highlights from fluorescent light, subtle skin texture and micro pores.`,
+    author: "@BubbleBrain",
+    authorUrl: "https://x.com/BubbleBrain",
+    sourceUrl: "https://x.com/BubbleBrain/status/2045167461147042202",
+  },
+  {
+    id: "ad-174-fragrance",
+    category: "Portrait",
+    title: "Luxury Fragrance Campaign Portrait",
+    imageUrl: `${RAW_BASE}/ad-creative_case174/output.jpg`,
+    prompt: `Transform the uploaded portrait into a luxurious cinematic fragrance poster inspired by the dark seductive elegance of a high-fashion perfume campaign. Style her as a mysterious femme fatale with soft glossy lips, luminous skin, subtle smoky eyes, and an intense captivating gaze. Dress her in a black satin slip dress with delicate lace trim and a glamorous faux fur wrap slipping off her shoulders. Place her inside a moody Parisian-inspired luxury interior with black reflective walls, gold rim lighting, deep shadows, cinematic contrast, and sensual ambient lighting.`,
+    author: "@amynys",
+    authorUrl: "https://x.com/amynys",
+    sourceUrl: "https://x.com/amynys/status/2054340951678587051",
+  },
+
+  // ─── Poster & Illustration ───
+  {
+    id: "poster-176-surreal",
+    category: "Poster",
+    title: "Surreal Brand World Poster",
+    imageUrl: `${RAW_BASE}/ad_case170/output.jpg`,
+    prompt: `A hyper-detailed surreal advertising poster for [BRAND NAME]. BACKGROUND: A large deep-toned rounded rectangle in [BRAND NAME]'s signature brand color fills 90% of the frame. Behind the subject, massive cropped brand typography bleeds off-frame. SUBJECT: Preserve the subject's exact face and skin tone from the reference. OUTFIT: Completely restyle the subject's clothing into a character that naturally belongs to [BRAND NAME]'s universe. SURREAL PRODUCT MOMENT: The product held by the subject opens, spills, or expands into a self-contained miniature world. Unreal Engine render quality, octane lighting, macro lens bokeh, 8K sharp foreground.`,
+    author: "@SaasJunctionHQ",
+    authorUrl: "https://x.com/SaasJunctionHQ",
+    sourceUrl: "https://x.com/SaasJunctionHQ/status/2050644926023844149",
+  },
+  {
+    id: "poster-matcha",
+    category: "Poster",
+    title: "Matcha Granola & Cereal Ads",
+    imageUrl: `${RAW_BASE}/ad-creative_case177/output.jpg`,
+    prompt: `Ultra-realistic premium food advertisement poster for a healthy breakfast granola brand, centered matte pouch packaging labeled "Matcha Oat Granola", green monochrome aesthetic, flat lay composition, soft studio lighting, vibrant matcha green background, surrounded by kiwi slices, almonds, oats, chia seeds, matcha powder bowl, granola bowls, scattered ingredients, clean modern typography headline "SUPERFOOD MORNING BOWL", handwritten annotation arrows with wellness benefits, luxury organic branding, natural shadows, high-end commercial food photography, 8k detail.`,
+    author: "@Sairah_0",
+    authorUrl: "https://x.com/Sairah_0",
+    sourceUrl: "https://x.com/Sairah_0/status/2054111354202779672",
+  },
+  {
+    id: "poster-176-clogs",
+    category: "Poster",
+    title: "Foam Clogs Ad Poster",
+    imageUrl: `${RAW_BASE}/ad-creative_case179/output.jpg`,
+    prompt: `Create a premium vertical 4:5 commercial advertising poster for perforated foam clogs, making the shoes visually central, clean, and instantly legible. Composition: a confident lifestyle fashion portrait with the woman seated or stepping forward in an airy sunlit architectural setting, the clogs clearly visible in the foreground and on-foot, showing their rounded shape, ventilation holes, heel strap, soft matte foam texture, and lightweight comfort. Poster headline: "STEP INTO AIR". Subtitle: "Lightweight comfort for every city moment."`,
+    author: "@Shinning1010",
+    authorUrl: "https://x.com/Shinning1010",
+    sourceUrl: "https://x.com/Shinning1010/status/2055688162333401470",
+  },
+
+  // ─── From wuyoscar/GPT-Image2-Skill ───
+  // Anime & Manga
+  {
+    id: "w-anime-jjk",
+    category: "Anime & Manga",
+    title: "MAPPA-Style Anime Action Still (JJK Aesthetic)",
+    imageUrl: `${WUYOSCAR_BASE}/anime-manga/anime-jjk-action.png`,
+    prompt: `An anime action still in the visual style of MAPPA's Jujutsu Kaisen (2020 TV anime). Landscape 16:9.\n\nA silver-white-haired young man in a dark navy school-uniform jacket, a blue blindfold across his eyes, in a mid-fight stance — one palm extended outward releasing a swirling dense-blue energy sphere with lightning-like crackles around its edge. Opposite him, a demonic shadow creature made of liquid black mass with multiple eyes lunges from the right.\n\nBackdrop: ruined urban street at dusk, shattered asphalt, cracked neon kanji sign "呪術" in split red LED, destroyed vehicles, rubble suspended mid-air by the shockwave, rain particles caught mid-flight.\n\nArt direction: MAPPA-style digital 2D animation — heavy cel shading, crisp line-art, rim-light on both figures, motion-blur streaks around the energy sphere. Palette of deep navy, electric cyan, crimson splashes. Kinetic-impact composition.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+  {
+    id: "w-anime-naruto",
+    category: "Anime & Manga",
+    title: "Shōnen Battle Key-Visual (Naruto Aesthetic)",
+    imageUrl: `${WUYOSCAR_BASE}/anime-manga/anime-naruto-clash.png`,
+    prompt: `A shōnen anime battle key-visual in the visual style of Studio Pierrot's Naruto Shippuden. Landscape 16:9.\n\nTwo ninja figures clash mid-air at the exact instant their signature jutsu collide — a glowing blue spiral of swirling chakra on the left fighter's right palm, a crackling white lightning blade on the right fighter's right palm. The collision point sends a circular shockwave outward.\n\nBoth fighters wear hitai-ate forehead protectors, jounin-style tactical vests with scroll pouches, ninja sandals. Left: spiky blond hair, whisker cheek marks, focused snarl, blue eyes. Right: dark hair, one red sharingan-like eye with three tomoe, calm expression.\n\nBackdrop: nighttime valley, cracked earth, giant uprooted trees mid-crash, moonlit clouds parting, sakura petals caught in the shockwave.\n\nArt direction: Studio Pierrot Naruto-Shippuden aesthetic — dynamic perspective, strong speed lines radiating from the collision, anime-action key-frame quality, digital 2D cel shading, saturated but not neon.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+  {
+    id: "w-anime-expression",
+    category: "Anime & Manga",
+    title: "16-Panel Anime Expression Grid",
+    imageUrl: `${WUYOSCAR_BASE}/anime-manga/anime-expression-grid.png`,
+    prompt: `Create a 16-panel expression grid of a silver-haired, blue-eyed anime girl. Her face shape, hairstyle, and clothing must remain highly consistent across all panels. The 16 expressions should include: happy, sad, angry, surprised, shy, speechless, evil grin, contemplative, curious, proud, wronged, disdainful, confused, scared, crying, and a heart expression.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+
+  // Gaming
+  {
+    id: "w-gaming-dark-fantasy",
+    category: "Gaming",
+    title: "Dark-Fantasy Swamp Boss Hunt",
+    imageUrl: `${WUYOSCAR_BASE}/gaming/dark-fantasy-hunt.png`,
+    prompt: `Create an original AAA dark-fantasy action RPG screenshot. A silver-haired monster hunter in layered leather armor stands in a ruined marsh at blue hour, sword drawn toward a huge winged swamp beast rising from mist. Cinematic over-the-shoulder framing, believable HUD with health, stamina, potion icons, quest text, and minimap. Wet stones, dead trees, torchlight, moonlit fog, subtle alchemy glyphs, highly detailed materials, dramatic but readable composition, premium next-gen game look, 16:9 landscape.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+  {
+    id: "w-gaming-nine-panel",
+    category: "Gaming",
+    title: "Nine-Panel Dark-Fantasy Worldbuilding Set",
+    imageUrl: `${WUYOSCAR_BASE}/gaming/worldbuilding-nine-panel-set.png`,
+    prompt: `Create a square 3x3 worldbuilding set for an original dark-fantasy universe called "Saltwind Reach". Each panel is a distinct but consistent scene: a storm-battered coastal fortress at dawn, a foggy market street, a knight relic close-up, a handwritten map fragment, a monster silhouette study, a candlelit tavern interior, an alchemist kit flat lay, a moonlit harbor, and a faction banner concept. Keep one cohesive art direction across all nine panels: painterly realism, muted teal / rust / bone palette, cinematic weather, premium concept-art presentation, small caption labels, and strong consistency across costume motifs, architecture, symbols, and lighting.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+  {
+    id: "w-gaming-cyber-hud",
+    category: "Gaming",
+    title: "Cyberpunk Europe Action HUD",
+    imageUrl: `${WUYOSCAR_BASE}/gaming/cyberpunk-europe-action.png`,
+    prompt: `Create a third-person cyberpunk action game screenshot set in a neon-soaked European capital at night. The protagonist has glowing cybernetic implants and stands on rain-slick streets near a famous landmark while holograms, drones, and flying traffic crowd the skyline. Add a polished game HUD with health bar, ammo count, radar, stealth/energy meters, and mission overlays. Vivid cyan-magenta palette, wet reflections, cinematic intensity, 16:9.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+
+  // Retro & Cyberpunk
+  {
+    id: "w-cyber-mecha",
+    category: "Cyberpunk",
+    title: "Cyberpunk Mecha Girl Over Sea Fortress",
+    imageUrl: `${WUYOSCAR_BASE}/retro-cyberpunk/cyberpunk-mecha.png`,
+    prompt: `A mecha girl mid-teens, pale skin smudged with soot and salt spray, sharp amber eyes with glowing HUD reticles, waist-length ash-white hair tied in a high ponytail whipping in the sea wind, matte gunmetal exoskeleton armor plating her shoulders, forearms and shins, exposed hydraulic pistons at the joints, chest rig with glowing cyan coolant lines, oversized oil-stained hangar jacket half slipping off one shoulder, a massive rail cannon resting on her right shoulder, standing off-center on the rusted edge of a tilted steel platform jutting out over dark water, a vast derelict sea-city at dusk, colossal megastructures of unknown purpose rising from the ocean in staggered silhouettes, moody low-key lighting, cold teal ambient from the overcast sky, warm amber sodium glow leaking from a distant structure, hard backlight from a low sun behind the towers carving her silhouette, volumetric god rays cutting through sea mist, cinematic anime key visual, painterly digital illustration with crisp line art, desaturated oceanic palette, film grain, high-contrast editorial poster aesthetic. Format 16:9.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+
+  // Product & Food
+  {
+    id: "w-food-burger",
+    category: "Product & Food",
+    title: "Gourmet Burger Hero Shot",
+    imageUrl: `${WUYOSCAR_BASE}/product-food/burger-hero.png`,
+    prompt: `A cinematic hero shot of a gourmet cheeseburger on a dark stone surface with glossy brioche bun, melted cheese, crisp lettuce, tomato, grilled patty, sauce, realistic texture, appetizing steam rising, warm side light, shallow depth of field, premium food commercial style, dark background, rich brown and amber tones, highly detailed meat texture, sesame seeds on bun, perfect food photography lighting, no text, no logos, no watermark.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+  {
+    id: "w-food-sushi",
+    category: "Product & Food",
+    title: "Premium Sushi Platter",
+    imageUrl: `${WUYOSCAR_BASE}/product-food/sushi-platter.png`,
+    prompt: `A top-down flat lay of an elegant sushi platter on a black slate board, featuring an assortment of nigiri, maki rolls, and sashimi arranged in a radial pattern, garnished with pickled ginger, wasabi, shiso leaves, and micro greens. Natural diffused overhead lighting, rich color contrast between the vibrant fish and dark slate, subtle shadows, polished wood chopsticks resting on a ceramic rest, a small soy sauce dish at the corner, premium Japanese food photography style, highly detailed rice texture and fish marbling, clean minimalist composition.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+
+  // UI/UX Mockups
+  {
+    id: "w-ui-dashboard",
+    category: "UI/UX",
+    title: "Analytics Dashboard Mockup",
+    imageUrl: `${WUYOSCAR_BASE}/ui-ux/analytics-dashboard.png`,
+    prompt: `A modern dark-mode analytics dashboard UI mockup displayed on a laptop screen in a well-lit office environment. The dashboard shows real-time data visualizations: a line chart with gradient fill, a bar chart comparing monthly metrics, a pie chart for user distribution, and key performance indicator cards with percentage changes. Clean minimalist design with a left sidebar navigation, top search bar, user avatar, and notification bell. Color palette: deep navy background with cyan, violet, and emerald accent colors. Polished SaaS product aesthetic, high-fidelity UI design, crisp typography, subtle glassmorphism effects, professional data dashboard layout.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+
+  // Typography & Posters
+  {
+    id: "w-poster-boston",
+    category: "Typography",
+    title: "Boston Spring Travel Poster",
+    imageUrl: `${WUYOSCAR_BASE}/typography-posters/boston-spring-poster.png`,
+    prompt: `A vintage travel poster for "Boston Spring" in the style of classic WPA national park posters. Foreground: a carpet of pink and white cherry blossom petals lining the iconic Commonwealth Avenue Mall, with brownstone townhouses receding into soft focus. Midground: the golden-domed Massachusetts State House rising above the treeline. Background: a hazy pastel sunset sky in gradient bands of peach, lavender, and pale blue. Typography at the bottom: "BOSTON SPRING" in an elegant serif typeface with "MASSACHUSETTS" in smaller sans-serif below. Use a warm, nostalgic color palette of terracotta, sage green, pale gold, and dusty rose. Printed texture, slight grain, retro screen-print aesthetic, travel poster composition, 2:3 vertical format.`,
+    author: "wuyoscar",
+    authorUrl: "https://github.com/wuyoscar",
+    sourceUrl: "https://github.com/wuyoscar/GPT-Image2-Skill",
+  },
+
+  // ─── From moosl/awsome-gpt-image-2-prompts (1472 prompts total) ───
+  {
+    id: "m-portrait-1",
+    category: "Portrait",
+    title: "Candid Smartphone-Flash Night Alley Street Portrait",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2059379220086735196/0.jpg",
+    prompt: `Create a candid, smartphone-style street photo of an extremely beautiful slender Korean woman walking confidently in a narrow urban alley at night. 3:4 aspect ratio, slightly low angle, centered subject walking toward camera, full body natural imperfect framing. Raw, unpolished street photography aesthetic. Korean woman with short to medium length dark hair, wearing a low-neck fitted mini dress with knee-high boots. Environment: narrow urban alley at night with grungy walls, graffiti, metal doors, dim warm lighting, deep shadows, harsh direct smartphone flash creating strong highlights on subject and dark background falloff. Photorealistic with visible grain, noise, flash glare, slight overexposure, authentic smartphone photo quality.`,
+    author: "@craftian_keskin",
+    authorUrl: "https://x.com/craftian_keskin",
+    sourceUrl: "https://x.com/craftian_keskin/status/2059379220086735196",
+  },
+  {
+    id: "m-portrait-2",
+    category: "Portrait",
+    title: "Cozy Korean Bedroom Night Portrait",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2058944647435870328/0.jpg",
+    prompt: `Ultra-realistic cozy bedroom portrait of a beautiful Korean woman relaxing on her bed at night inside a warm aesthetic bedroom. She wears an oversized soft cream-colored hoodie with long sleeves covering part of her hands. Warm ambient lighting from a bedside lamp, fairy lights, and candlelight creates cinematic golden highlights. Cozy modern Korean bedroom with fluffy cream bedding, soft blankets, warm decor, small bookshelf, aesthetic posters, framed photos, flowers in a vase, candles, notebook, coffee mug. Romantic slice-of-life atmosphere, cozy feminine aesthetic, intimate late-night mood, shallow depth of field, cinematic composition, highly detailed, photorealistic, soft warm glow, realistic DSLR photography, luxury lifestyle editorial feel.`,
+    author: "@john_my07",
+    authorUrl: "https://x.com/john_my07",
+    sourceUrl: "https://x.com/john_my07/status/2058944647435870328",
+  },
+  {
+    id: "m-portrait-3",
+    category: "Portrait",
+    title: "Korean Classroom Golden Hour Portrait",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2056251216708145544/0.jpg",
+    prompt: `Ultra-realistic portrait of a beautiful Korean woman standing inside an empty Korean classroom during late afternoon golden hour, captured in cinematic film photography style. She wears an oversized vintage cream knit sweater slightly off one shoulder, paired with high-waisted dark navy pleated mini skirt and white low-top sneakers. Long dark brown hair with subtle highlights. Warm amber golden light flooding through tall classroom windows at a low angle, casting long dramatic shadows across wooden desks. Authentic Korean classroom setting with rows of wooden desks, vintage chalk-dusted green board, South Korean flag. 35mm analog film grain texture, Kodak Portra 400 color palette — warm honey tones, muted greens, soft creams. Shallow depth of field, nostalgic coming-of-age Korean drama visual tone.`,
+    author: "@doctorwasif",
+    authorUrl: "https://x.com/doctorwasif",
+    sourceUrl: "https://x.com/doctorwasif/status/2056251216708145544",
+  },
+  {
+    id: "m-portrait-4",
+    category: "Portrait",
+    title: "Black-and-White Motion Blur Editorial",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2057318412175757523/0.jpg",
+    prompt: `A hyper-realistic, cinematic black-and-white portrait of a woman caught in mid-motion, her face partially obscured by sweeping hair strands and intentional motion blur. The subject is framed from the shoulders up, slightly off-center, with her head turning laterally as if pulled by momentum. Long exposure creates luminous horizontal light streaks behind her, suggesting an urban night environment dissolving into abstraction. High contrast, deep shadows, film grain, dramatic editorial fashion photography style.`,
+    author: "@Ciri_ai",
+    authorUrl: "https://x.com/Ciri_ai",
+    sourceUrl: "https://x.com/Ciri_ai/status/2057318412175757523",
+  },
+  {
+    id: "m-brand-1",
+    category: "Branding",
+    title: "Luxury Perfume Brand Campaign",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2057309251048206778/0.jpg",
+    prompt: `Ultra-realistic 8K editorial male portrait with luxury "quiet wealth" aesthetic blended with cinematic Instagram masculinity. Styled in a fitted black turtleneck under a premium black tailored blazer. Dark emerald-green cinematic studio gradient background with soft atmospheric depth. Shot on an 85mm lens at f/1.8 with razor-sharp focus on the eyes, creamy bokeh, ultra-detailed skin texture. Premium GQ magazine color grading, luxury fashion campaign vibe, hyper-realistic photorealism, dramatic yet minimal composition, rich blacks, elite masculine aura, modern billionaire aesthetic, studio perfection, award-winning editorial photography.`,
+    author: "@frametheory058",
+    authorUrl: "https://x.com/frametheory058",
+    sourceUrl: "https://x.com/frametheory058/status/2057309251048206778",
+  },
+  {
+    id: "m-3d-1",
+    category: "3D Render",
+    title: "Isometric Night City Building",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2057308848118173943/0.jpg",
+    prompt: `An isometric 3D render of a cyberpunk night city building. The structure features glowing neon windows in cyan and magenta, a flat rooftop with tiny details like AC units and satellite dishes, wet reflective streets at the base with puddle reflections of the building's neon glow. Low-poly with stylized textures, warm interior light spilling from windows, cool blue night atmosphere, volumetric fog between buildings, cinematic quality render, octane render style, highly detailed modular architecture, vibrant synthwave color palette, 4K resolution.`,
+    author: "@AIwithSynthia",
+    authorUrl: "https://x.com/AIwithSynthia",
+    sourceUrl: "https://x.com/AIwithSynthia/status/2057308848118173943",
+  },
+  {
+    id: "m-poster-1",
+    category: "Poster",
+    title: "Cinematic Editorial Portrait Black-Gold",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2056254447203025155/0.jpg",
+    prompt: `Luxury cinematic fashion editorial portrait, ultra high-end magazine cover style. Cinematic candid portrait, tight close-up, face fills 65-85% of frame. Telephoto compression photography with foreground crowd partially blocking frame, blurred silhouettes crossing lens edges. Subject remains perfectly sharp, surrounding people melt into motion blur and darkness. Ultra realistic skin texture, visible pores, sharp emotional eyes with cinematic catchlight. Cinematic beauty lighting with soft diffused key light, golden rim light outlining cheekbones and hair. Luxurious black and gold cinematic tones, deep matte blacks, warm champagne gold highlights. Vogue Italia inspired, mysterious, regal, emotionally magnetic, quiet luxury aesthetic.`,
+    author: "@aidavid125",
+    authorUrl: "https://x.com/aidavid125",
+    sourceUrl: "https://x.com/aidavid125/status/2056254447203025155",
+  },
+  {
+    id: "m-illustration-1",
+    category: "Illustration",
+    title: "Late-Night Seoul Ramen Journal Page",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2056322913628815661/0.jpg",
+    prompt: `Korean lifestyle magazine journaling illustration. A stylish Korean girl with long wavy hair wearing an oversized varsity jacket and plaid skirt, sitting inside a cozy Seoul convenience store late at night eating instant ramen and triangle kimbap. Watercolor and ink sketch aesthetic with hand-drawn Korean annotations, doodles, arrows, scrapbook-style layout. Glowing convenience store refrigerator lights, soft pastel pink and blue tones, rainy Seoul streets visible through glass windows, cute stationery elements, aesthetic snack packaging, cozy urban night atmosphere, soft anime-inspired features, Pinterest-style Korean editorial page, cinematic cozy lighting.`,
+    author: "@Umar__786Ai",
+    authorUrl: "https://x.com/Umar__786Ai",
+    sourceUrl: "https://x.com/Umar__786Ai/status/2056322913628815661",
+  },
+  {
+    id: "m-character-1",
+    category: "Character Design",
+    title: "12-Expression Sticker Pack Portrait",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2057145271675765241/0.jpg",
+    prompt: `A high-quality sticker pack featuring a young beautiful woman shown in 12 different facial expressions and emotions. Arranged in a clean 4x3 grid on a light neutral beige background. Each portrait is cropped around the shoulders and surrounded by a thick white die-cut sticker border. Expressions include: friendly smile, laughing joyfully, cool pose with black sunglasses, angry frowning, shocked, thoughtful, playful wink, heart hands, suspicious, puffed cheeks, excited surprise, and casual salute. Consistent character appearance across all stickers. Realistic digital photography style, ultra-detailed skin and hair texture, soft studio lighting, trendy social media emoji/sticker aesthetic, premium sticker sheet design.`,
+    author: "@iamsofiaijaz",
+    authorUrl: "https://x.com/iamsofiaijaz",
+    sourceUrl: "https://x.com/iamsofiaijaz/status/2057145271675765241",
+  },
+  {
+    id: "m-portrait-compare",
+    category: "Comparison",
+    title: "Child Me Meets Present Me Side-by-Side",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2059048918978351303/0.jpg",
+    prompt: `Create a picture with the following details: On the left: a child version of me looking with an innocent smile to the right, with 1997 written above wearing a light grey tshirt and blue jeans. On the right: A present version of me (match face) sits with her hands under her chin and looks at the child with a calm smile, with "2026" written above. Wearing a white tshirt and blue jeans. Studio background: plain and soft. The lighting: Soft, cinematic, warm. Style: Professional, minimal, emotional photography, focusing on feelings and visual communication between the two versions. Make the picture look so real like a real photoshoot. photo size 4:5.`,
+    author: "@Naiknelofar788",
+    authorUrl: "https://x.com/Naiknelofar788",
+    sourceUrl: "https://x.com/Naiknelofar788/status/2059048918978351303",
+  },
+  {
+    id: "m-portrait-selfie-1",
+    category: "Portrait",
+    title: "90s Disposable-Flash Bedroom Mirror Selfie",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2058926680966582337/0.jpg",
+    prompt: `A cozy moody bedroom mirror selfie of a young Korean woman with long soft dark brown hair slightly messy and voluminous, pale smooth complexion, subtle glossy lips, relaxed dreamy expression. She is sitting casually on the floor in front of a large mirror, holding an iPhone with flash turned on, creating strong 90s disposable-camera glare and lens flare reflections. She wears a soft dusty pink off-shoulder long sleeve top, loose cream cotton lounge pants, delicate silver jewelry. Warm ambient bedroom lighting mixed with harsh camera flash. Cozy aesthetic bedroom with candles, soft lamp glow, photo collage, skincare products on vanity. Atmosphere intimate, candid, raw, imperfect, authentic late-night energy. Slight grain, disposable camera aesthetic, Korean Pinterest aesthetic.`,
+    author: "@Aqsahere_",
+    authorUrl: "https://x.com/Aqsahere_",
+    sourceUrl: "https://x.com/Aqsahere_/status/2058926680966582337",
+  },
+  {
+    id: "m-portrait-selfie-2",
+    category: "Portrait",
+    title: "Y2K Flash Mirror Selfie Luxury Bathroom",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2056244935112978875/0.jpg",
+    prompt: `A hyper-realistic mirror selfie of a beautiful young woman in a luxurious beige marble bathroom at night, photographed with an extremely powerful direct iPhone flash fired straight into the mirror. The flash creates an intense white flash explosion with heavy bloom, sharp reflective glare, dramatic overexposed hotspots. She has extremely long, thick copper-red wavy hair cascading down to her lower back. She wears a black strapless bandeau top, low-rise dark denim jeans, and a black leather belt. Ultra-realistic candid flash photography, strong Y2K paparazzi aesthetic, cinematic low-light realism, luxury hotel bathroom vibe, direct flash editorial look.`,
+    author: "@naelli_ai",
+    authorUrl: "https://x.com/naelli_ai",
+    sourceUrl: "https://x.com/naelli_ai/status/2056244935112978875",
+  },
+  {
+    id: "m-portrait-glitch",
+    category: "Portrait",
+    title: "Glitch Motion-Blur Editorial Fashion",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2056371032290717919/0.jpg",
+    prompt: `A stylish young man standing in a dynamic pose, looking down, wearing oversized blue colour shirt and loose white pants, minimal aesthetic fashion, solid bright white background, dramatic lighting, motion blur dripping effect around the body, glitch smear effect, soft shadows, high contrast, cinematic look, ultra realistic, 4K, sharp details, editorial fashion photography style.`,
+    author: "@Xaroon_x",
+    authorUrl: "https://x.com/Xaroon_x",
+    sourceUrl: "https://x.com/Xaroon_x/status/2056371032290717919",
+  },
+  {
+    id: "m-brand-male",
+    category: "Branding",
+    title: "Luxury Male Portrait Black Turtleneck",
+    imageUrl: "https://cdn.aiistudio.com/twitter/2057309251048206778/0.jpg",
+    prompt: `Ultra-realistic 8K editorial male portrait with luxury "quiet wealth" aesthetic blended with cinematic Instagram masculinity. Styled in a fitted black turtleneck under a premium black tailored blazer. Dark emerald-green cinematic studio gradient background. Shot on an 85mm lens at f/1.8 with razor-sharp focus on the eyes. Premium GQ magazine color grading, luxury fashion campaign vibe, hyper-realistic photorealism, dramatic yet minimal composition, rich blacks, elite masculine aura, modern billionaire aesthetic.`,
+    author: "@frametheory058",
+    authorUrl: "https://x.com/frametheory058",
+    sourceUrl: "https://x.com/frametheory058/status/2057309251048206778",
+  },
+];

@@ -4,6 +4,7 @@ import ContentArea from "./components/layout/ContentArea";
 import Toast from "./components/common/Toast";
 import Generate from "./routes/Generate";
 import Edit from "./routes/Edit";
+import Library from "./routes/Library";
 import Settings from "./routes/Settings";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Navigate to="/generate" replace />} />
           <Route path="/generate" element={<Generate />} />
           <Route path="/edit" element={<Edit />} />
+          <Route path="/library" element={<Library />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </ContentArea>
