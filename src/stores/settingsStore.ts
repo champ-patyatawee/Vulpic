@@ -4,12 +4,14 @@ import type { ModelId } from "../types/model";
 interface SettingsState {
   apiKey: string;
   defaultModel: ModelId;
+  editModel: ModelId;
   theme: "light" | "dark";
   galleryFolder: string;
 
   // Actions
   setApiKey: (key: string) => void;
   setDefaultModel: (model: ModelId) => void;
+  setEditModel: (model: ModelId) => void;
   setTheme: (theme: "light" | "dark") => void;
   setGalleryFolder: (folder: string) => void;
 }
@@ -17,11 +19,13 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>((set) => ({
   apiKey: "",
   defaultModel: "openai/gpt-5.4-image-2",
+  editModel: "openai/gpt-5.4-image-2",
   theme: "light",
   galleryFolder: "",
 
   setApiKey: (key) => set({ apiKey: key }),
   setDefaultModel: (model) => set({ defaultModel: model }),
+  setEditModel: (model) => set({ editModel: model }),
   setTheme: (theme) => set({ theme }),
   setGalleryFolder: (folder) => set({ galleryFolder: folder }),
 }));

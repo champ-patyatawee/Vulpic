@@ -1,21 +1,44 @@
+import { useState, useEffect } from "react";
 import { Key, Monitor, FolderOpen, Palette } from "lucide-react";
 import { useSettingsStore } from "../stores/settingsStore";
-import { AVAILABLE_MODELS } from "../types/model";
+import type { AIModel } from "../types/model";
+import { fetchImageModels } from "../services/openrouter";
 import Button from "../components/common/Button";
+import ModelSelector from "../components/common/ModelSelector";
 import { useUIStore } from "../stores/uiStore";
 
 export default function Settings() {
   const {
     apiKey,
     defaultModel,
+    editModel,
     theme,
     galleryFolder,
     setApiKey,
     setDefaultModel,
+    setEditModel,
     setTheme,
     setGalleryFolder,
   } = useSettingsStore();
   const showToast = useUIStore((s) => s.showToast);
+
+  const [models, setModels] = useState<AIModel[]>([]);
+  const [modelsLoading, setModelsLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const key = useSettingsStore.getState().apiKey;
+        const list = await fetchImageModels(key);
+        setModels(list);
+      } catch {
+        const { AVAILABLE_MODELS } = await import("../types/model");
+        setModels(AVAILABLE_MODELS);
+      } finally {
+        setModelsLoading(false);
+      }
+    })();
+  }, []);
 
   const handleSelectFolder = async () => {
     try {
@@ -65,48 +88,48 @@ export default function Settings() {
             </div>
           </section>
 
-          {/* Default Model */}
+          {/* Generation Model */}
           <section>
             <div className="mb-3 flex items-center gap-2">
               <Monitor size={18} className="text-text-secondary" />
               <h2 className="text-sm font-medium text-text-primary">
-                Default Model
+                Generation Model
               </h2>
             </div>
-            <div className="space-y-2">
-              {AVAILABLE_MODELS.map((model) => (
-                <label
-                  key={model.id}
-                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-                    defaultModel === model.id
-                      ? "border-accent bg-accent/5"
-                      : "border-border hover:bg-bg-secondary"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="defaultModel"
-                    value={model.id}
-                    checked={defaultModel === model.id}
-                    onChange={(e) => setDefaultModel(e.target.value as any)}
-                    className="mt-1 accent-accent"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-text-primary">
-                        {model.name}
-                      </span>
-                      <span className="text-xs text-text-tertiary">
-                        {model.pricing}
-                      </span>
-                    </div>
-                    <p className="text-xs text-text-secondary mt-0.5">
-                      {model.provider} — {model.description}
-                    </p>
-                  </div>
-                </label>
-              ))}
+            <p className="mb-2 text-xs text-text-secondary">
+              Used when generating new images.
+            </p>
+            {modelsLoading ? (
+              <p className="text-xs text-text-tertiary py-2">Loading models...</p>
+            ) : (
+              <ModelSelector
+                models={models}
+                selected={defaultModel}
+                onSelect={setDefaultModel}
+              />
+            )}
+          </section>
+
+          {/* Edit Model */}
+          <section>
+            <div className="mb-3 flex items-center gap-2">
+              <Monitor size={18} className="text-text-secondary" />
+              <h2 className="text-sm font-medium text-text-primary">
+                Edit Model
+              </h2>
             </div>
+            <p className="mb-2 text-xs text-text-secondary">
+              Used when editing images with AI.
+            </p>
+            {modelsLoading ? (
+              <p className="text-xs text-text-tertiary py-2">Loading models...</p>
+            ) : (
+              <ModelSelector
+                models={models}
+                selected={editModel}
+                onSelect={setEditModel}
+              />
+            )}
           </section>
 
           {/* Gallery Folder */}

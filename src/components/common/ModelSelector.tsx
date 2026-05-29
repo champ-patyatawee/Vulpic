@@ -39,7 +39,7 @@ export default function ModelSelector({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-border bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-1 w-72 max-h-80 overflow-y-auto rounded-lg border border-border bg-white shadow-lg">
           {models.map((model) => (
             <button
               key={model.id}
@@ -57,9 +57,6 @@ export default function ModelSelector({
               </span>
               <span className="text-xs text-text-secondary line-clamp-2">
                 {model.provider} — {model.description}
-              </span>
-              <span className="text-xs text-text-tertiary mt-0.5">
-                {model.pricing}
               </span>
             </button>
           ))}

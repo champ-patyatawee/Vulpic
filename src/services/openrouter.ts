@@ -1,4 +1,4 @@
-import type { ModelId } from "../types/model";
+import type { ModelId, AIModel } from "../types/model";
 
 const BASE = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -174,4 +174,61 @@ function extractImageFromResponse(content: string): string {
   throw new Error(
     `Model returned text instead of an image:\n${content.slice(0, 500)}`,
   );
+}
+
+const MODELS_CACHE = "vulpic-models-cache";
+const CACHE_TTL = 5 * 60 * 1000;
+
+/**
+ * Fetch all image-generation models from OpenRouter using the API key.
+ * The ?output_modalities=image filter returns ALL image models (including
+ * Seedream, Grok Imagine, FLUX, Recraft, etc.) — requires auth.
+ */
+export async function fetchImageModels(apiKey?: string): Promise<AIModel[]> {
+  const cached = localStorage.getItem(MODELS_CACHE);
+  if (cached) {
+    try {
+      const { data, ts } = JSON.parse(cached);
+      if (Date.now() - ts < CACHE_TTL) return data;
+    } catch { /* corrupt cache */ }
+  }
+
+  const res = await fetch("https://openrouter.ai/api/v1/models?output_modalities=image", {
+    headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined,
+  });
+  if (!res.ok) throw new Error(`OpenRouter API ${res.status}`);
+
+  const body = await res.json();
+  const items = body.data ?? body ?? [];
+
+  const imageModels = items.map((m: any) => {
+    const p = m.pricing ?? {};
+    // Use pricing.image for per-image pricing, otherwise use prompt/completion token pricing
+    const cost = p.image != null
+      ? `$${p.image}/image`
+      : p.prompt != null
+        ? `$${p.prompt} / $${p.completion ?? "?"} per 1M`
+        : "Variable";
+    const slug: string = m.id;
+    const provider = slug.startsWith("openai/") ? "OpenAI"
+      : slug.startsWith("google/") ? "Google"
+      : slug.startsWith("bytedance-") ? "ByteDance"
+      : slug.startsWith("x-ai/") ? "xAI"
+      : slug.startsWith("openrouter/") ? "OpenRouter"
+      : slug.startsWith("recraft/") ? "Recraft"
+      : slug.startsWith("black-forest-labs/") ? "Black Forest Labs"
+      : slug.startsWith("sourceful/") ? "Sourceful"
+      : slug.split("/")[0] ?? "Other";
+    return {
+      id: m.id,
+      name: m.name.replace(/^[^:]+:\s*/, ""),
+      provider,
+      description: m.description ?? "",
+      pricing: cost,
+      capabilities: ["image-generation" as const, "image-editing" as const, "image-qna" as const],
+    };
+  });
+
+  localStorage.setItem(MODELS_CACHE, JSON.stringify({ data: imageModels, ts: Date.now() }));
+  return imageModels;
 }

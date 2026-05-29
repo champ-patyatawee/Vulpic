@@ -25,6 +25,14 @@ export const AVAILABLE_MODELS: AIModel[] = [
     capabilities: ["image-generation", "image-editing"],
   },
   {
+    id: "google/gemini-2.5-flash-image",
+    name: "Nano Banana (Gemini 2.5 Flash)",
+    provider: "Google",
+    description: "Fast and efficient image generation. Optimized for high-volume, low-latency tasks",
+    pricing: "Free tier / pay-as-you-go",
+    capabilities: ["image-generation", "image-editing"],
+  },
+  {
     id: "google/gemini-3.1-flash-image-preview",
     name: "Nano Banana 2 (Gemini 3.1 Flash)",
     provider: "Google",
@@ -56,6 +64,22 @@ export const AVAILABLE_MODELS: AIModel[] = [
     pricing: "$5/$10 per 1M tokens",
     capabilities: ["image-generation", "image-editing", "image-qna"],
   },
+  {
+    id: "openrouter/auto",
+    name: "Auto Router",
+    provider: "OpenRouter",
+    description: "Automatically routes to the best available image generation model for your prompt",
+    pricing: "Varies by model",
+    capabilities: ["image-generation", "image-editing", "image-qna"],
+  },
 ];
+
+/** Return models that are available with the given API keys */
+export function getAvailableModels(
+  openrouterKey: string,
+): AIModel[] {
+  // All models go through OpenRouter
+  return !!openrouterKey ? AVAILABLE_MODELS : [];
+}
 
 export type ModelId = (typeof AVAILABLE_MODELS)[number]["id"];

@@ -1,22 +1,16 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { MessageSquare, Settings, Plus } from "lucide-react";
+import { Sparkles, Image, Settings } from "lucide-react";
 import clsx from "clsx";
-import { useChatStore } from "../../stores/chatStore";
 
 const navItems = [
-  { path: "/chat", icon: MessageSquare, label: "Chat" },
+  { path: "/generate", icon: Sparkles, label: "Generate" },
+  { path: "/edit", icon: Image, label: "Edit" },
   { path: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const createConversation = useChatStore((s) => s.createConversation);
-
-  const handleNewChat = () => {
-    const id = createConversation();
-    navigate(`/chat/${id}`);
-  };
 
   return (
     <aside className="flex h-full w-16 flex-col items-center border-r border-border bg-bg-secondary py-4">
@@ -49,20 +43,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* New Chat */}
-      {location.pathname.startsWith("/chat") && (
-        <button
-          onClick={handleNewChat}
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
-          title="New Conversation"
-        >
-          <Plus size={20} />
-        </button>
-      )}
     </aside>
   );
 }

@@ -1,5 +1,6 @@
-import { Download, Copy, Check } from "lucide-react";
+import { Download, Copy, Check, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "../common/Button";
 import { saveImage } from "../../services/tauriCommands";
 import { useUIStore } from "../../stores/uiStore";
@@ -12,6 +13,7 @@ interface ResultActionsProps {
 export default function ResultActions({ imageDataUrl, imageName }: ResultActionsProps) {
   const [copied, setCopied] = useState(false);
   const showToast = useUIStore((s) => s.showToast);
+  const navigate = useNavigate();
 
   const handleDownload = async () => {
     try {
@@ -24,7 +26,6 @@ export default function ResultActions({ imageDataUrl, imageName }: ResultActions
 
   const handleCopy = async () => {
     try {
-      // Convert base64 to blob for clipboard
       const res = await fetch(imageDataUrl);
       const blob = await res.blob();
       await navigator.clipboard.write([
@@ -38,8 +39,16 @@ export default function ResultActions({ imageDataUrl, imageName }: ResultActions
     }
   };
 
+  const handleEdit = () => {
+    navigate("/editor", { state: { imageDataUrl } });
+  };
+
   return (
     <div className="flex items-center gap-2 mt-2">
+      <Button variant="secondary" size="sm" onClick={handleEdit}>
+        <Sparkles size={14} />
+        Edit
+      </Button>
       <Button variant="secondary" size="sm" onClick={handleDownload}>
         <Download size={14} />
         Save

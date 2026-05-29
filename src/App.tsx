@@ -2,7 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/layout/Sidebar";
 import ContentArea from "./components/layout/ContentArea";
 import Toast from "./components/common/Toast";
-import ChatMode from "./routes/ChatMode";
+import Generate from "./routes/Generate";
+import Edit from "./routes/Edit";
 import Settings from "./routes/Settings";
 
 function App() {
@@ -11,9 +12,9 @@ function App() {
       <Sidebar />
       <ContentArea>
         <Routes>
-          <Route path="/" element={<Navigate to="/chat" replace />} />
-          <Route path="/chat" element={<ChatMode />} />
-          <Route path="/chat/:conversationId" element={<ChatMode />} />
+          <Route path="/" element={<Navigate to="/generate" replace />} />
+          <Route path="/generate" element={<Generate />} />
+          <Route path="/edit" element={<Edit />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </ContentArea>
