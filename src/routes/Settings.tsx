@@ -182,6 +182,10 @@ export default function Settings() {
           </section>
         </div>
       </div>
+
+      <footer className="flex justify-end border-t border-border px-6 py-3">
+        <span className="text-xs text-text-tertiary">v0.1.0</span>
+      </footer>
     </div>
   );
 }

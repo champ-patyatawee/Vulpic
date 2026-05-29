@@ -1,27 +1,34 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, ImagePlus } from "lucide-react";
+import { Send, Sparkles, ImagePlus, Trash2 } from "lucide-react";
 import TopBar from "../components/layout/TopBar";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useUIStore } from "../stores/uiStore";
+import { useChatStore } from "../stores/chatStore";
 import { generateImage, editImage } from "../services/openrouter";
 import ResultActions from "../components/editor/ResultActions";
-
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  text?: string;
-  imageUrl?: string;
-  refImages?: { dataUrl: string; name: string }[];
-}
+import type { Message } from "../types/message";
 
 export default function Generate() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [refImages, setRefImages] = useState<{ dataUrl: string; name: string }[]>([]);
   const showToast = useUIStore((s) => s.showToast);
+  const messages = useChatStore((s) => {
+    const conv = s.conversations.find((c) => c.id === s.activeConversationId);
+    return conv?.messages ?? [];
+  });
+  const addMessage = useChatStore((s) => s.addMessage);
+  const updateMessage = useChatStore((s) => s.updateMessage);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Ensure there is an active conversation on mount
+  useEffect(() => {
+    const state = useChatStore.getState();
+    if (!state.activeConversationId) {
+      state.createConversation();
+    }
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,13 +54,33 @@ export default function Generate() {
       return;
     }
 
-    const userMsg: ChatMessage = {
+    // Ensure we have an active conversation
+    let convId = useChatStore.getState().activeConversationId;
+    if (!convId) {
+      convId = useChatStore.getState().createConversation();
+    }
+
+    const userMsg: Message = {
       id: crypto.randomUUID(),
       role: "user",
-      text: text || undefined,
-      refImages: refImages.length > 0 ? [...refImages] : undefined,
+      content: [
+        ...refImages.map((img) => ({ type: "image" as const, dataUrl: img.dataUrl, name: img.name })),
+        ...(text ? [{ type: "text" as const, text }] : []),
+      ],
+      createdAt: Date.now(),
     };
-    setMessages((prev) => [...prev, userMsg]);
+    addMessage(convId, userMsg);
+
+    // Add a placeholder "Generating..." message that gets replaced on completion
+    const loadingMsgId = crypto.randomUUID();
+    const now = Date.now();
+    addMessage(convId, {
+      id: loadingMsgId,
+      role: "assistant",
+      content: [{ type: "text", text: "Generating image..." }],
+      createdAt: now,
+    });
+
     setPrompt("");
     setRefImages([]);
     setLoading(true);
@@ -63,17 +90,48 @@ export default function Generate() {
       const resultUrl = refImages.length > 0
         ? await editImage(apiKey, modelId, refImages[0].dataUrl, text, refImages.slice(1).map((r) => r.dataUrl))
         : await generateImage(apiKey, modelId, text);
-      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", imageUrl: resultUrl }]);
+      updateMessage(convId, loadingMsgId, {
+        id: loadingMsgId,
+        role: "assistant",
+        content: [{ type: "image", dataUrl: resultUrl, name: "vulpic-edit" }],
+        createdAt: now,
+      });
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "Generation failed", "error");
+      const errorMsg = err instanceof Error ? err.message : "Generation failed";
+      updateMessage(convId, loadingMsgId, {
+        id: loadingMsgId,
+        role: "assistant",
+        content: [{ type: "text", text: `Error: ${errorMsg}` }],
+        createdAt: now,
+      });
+      showToast(errorMsg, "error");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleClear = () => {
+    const state = useChatStore.getState();
+    if (state.activeConversationId) {
+      state.deleteConversation(state.activeConversationId);
+    }
+    state.createConversation();
+  };
+
   return (
     <>
-      <TopBar />
+      <TopBar>
+        {messages.length > 0 && (
+          <button
+            onClick={handleClear}
+            className="flex items-center gap-1.5 text-xs text-text-tertiary hover:text-danger transition-colors"
+            title="Clear chat history"
+          >
+            <Trash2 size={14} />
+            Clear history
+          </button>
+        )}
+      </TopBar>
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -94,43 +152,48 @@ export default function Generate() {
               >
                 {msg.role === "user" ? (
                   <div className="max-w-[75%] space-y-2">
-                    {msg.refImages && msg.refImages.length > 0 && (
+                    {msg.content.filter((c) => c.type === "image").length > 0 && (
                       <div className="flex flex-wrap gap-1.5 justify-end">
-                        {msg.refImages.map((img, i) => (
-                          <img key={i} src={img.dataUrl} alt="" className="h-12 w-12 rounded-lg border border-white/30 object-cover" />
+                        {msg.content.filter((c) => c.type === "image").map((img, i) => (
+                          <img key={i} src={img.dataUrl} alt={img.name ?? ""} className="h-12 w-12 rounded-lg border border-white/30 object-cover" />
                         ))}
                       </div>
                     )}
-                    {msg.text && (
-                      <div className="rounded-2xl bg-accent px-4 py-2.5 text-sm text-white">
-                        {msg.text}
+                    {msg.content.filter((c) => c.type === "text").map((c, i) => (
+                      <div key={i} className="rounded-2xl bg-accent px-4 py-2.5 text-sm text-white">
+                        {c.text}
                       </div>
-                    )}
+                    ))}
                   </div>
-                ) : msg.imageUrl ? (
-                  <div className="max-w-md rounded-xl border border-border bg-white p-3 shadow-sm">
-                    <img
-                      src={msg.imageUrl}
-                      alt="Generated"
-                      className="w-full rounded-lg object-contain"
-                      style={{ maxHeight: "50vh" }}
-                    />
-                    <div className="mt-2 flex justify-end">
-                      <ResultActions imageDataUrl={msg.imageUrl} />
-                    </div>
-                  </div>
-                ) : null}
+                ) : (() => {
+                  const imgContent = msg.content.find((c) => c.type === "image");
+                  if (imgContent) {
+                    return (
+                      <div className="max-w-md rounded-xl border border-border bg-white p-3 shadow-sm">
+                        <img
+                          src={imgContent.dataUrl}
+                          alt="Generated"
+                          className="w-full rounded-lg object-contain"
+                          style={{ maxHeight: "50vh" }}
+                        />
+                        <div className="mt-2 flex justify-end">
+                          <ResultActions imageDataUrl={imgContent.dataUrl} />
+                        </div>
+                      </div>
+                    );
+                  }
+                  const txtContent = msg.content.find((c) => c.type === "text");
+                  if (txtContent) {
+                    return (
+                      <div className="rounded-2xl bg-bg-secondary px-4 py-2.5 text-sm text-text-primary">
+                        {txtContent.text}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             ))}
-
-            {loading && (
-              <div className="flex justify-start">
-                <div className="flex items-center gap-2 rounded-2xl bg-bg-secondary px-4 py-3">
-                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-                  <span className="text-xs text-text-secondary">Generating...</span>
-                </div>
-              </div>
-            )}
 
             <div ref={bottomRef} />
           </div>
