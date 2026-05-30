@@ -10,8 +10,7 @@ import { readGalleryFolder } from "../services/tauriCommands";
 import { editImage } from "../services/openrouter";
 import { applyFilter } from "../services/imageFilters";
 import { saveImage } from "../services/tauriCommands";
-import { BUILTIN_TEMPLATES } from "../types/template";
-import type { PromptTemplate } from "../types/template";
+
 
 const EXT_TO_MIME: Record<string, string> = {
   png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
@@ -35,6 +34,113 @@ async function readFileAsDataUrl(filePath: string): Promise<string> {
   });
 }
 
+// --- Crop helpers ---
+interface CropRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+const HANDLE_RADIUS = 10;
+const MIN_CROP = 30;
+
+function getHandleAt(mx: number, my: number, r: CropRect): string | null {
+  const cx = (x: number) => Math.abs(mx - x) <= HANDLE_RADIUS;
+  const cy = (y: number) => Math.abs(my - y) <= HANDLE_RADIUS;
+  const { left, top, width, height } = r;
+  const rt = left + width;
+  const bt = top + height;
+  const mc = left + width / 2;
+  const mr = top + height / 2;
+
+  if (cx(left) && cy(top)) return "nw";
+  if (cx(rt) && cy(top)) return "ne";
+  if (cx(left) && cy(bt)) return "sw";
+  if (cx(rt) && cy(bt)) return "se";
+  if (cx(mc) && cy(top)) return "n";
+  if (cx(mc) && cy(bt)) return "s";
+  if (cx(rt) && cy(mr)) return "e";
+  if (cx(left) && cy(mr)) return "w";
+
+  // Inside rect = move
+  if (mx >= left && mx <= rt && my >= top && my <= bt) return "move";
+  return null;
+}
+
+function cursorForHandle(handle: string | null): string {
+  switch (handle) {
+    case "nw": return "nw-resize";
+    case "ne": return "ne-resize";
+    case "sw": return "sw-resize";
+    case "se": return "se-resize";
+    case "n": return "n-resize";
+    case "s": return "s-resize";
+    case "e": return "e-resize";
+    case "w": return "w-resize";
+    case "move": return "move";
+    default: return "default";
+  }
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Failed to load image"));
+    img.src = src;
+  });
+}
+
+async function canvasEdit(
+  src: string,
+  draw: (ctx: CanvasRenderingContext2D, img: HTMLImageElement, canvas: HTMLCanvasElement) => void,
+): Promise<string> {
+  const img = await loadImage(src);
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext("2d")!;
+  draw(ctx, img, canvas);
+  return canvas.toDataURL("image/jpeg", 0.92);
+}
+
+async function rotateWithCanvas(src: string, deg: number): Promise<string> {
+  const img = await loadImage(src);
+  const rad = (deg * Math.PI) / 180;
+  const cos = Math.abs(Math.cos(rad));
+  const sin = Math.abs(Math.sin(rad));
+  const w = Math.round(img.naturalWidth * cos + img.naturalHeight * sin);
+  const h = Math.round(img.naturalWidth * sin + img.naturalHeight * cos);
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d")!;
+  ctx.translate(w / 2, h / 2);
+  ctx.rotate(rad);
+  ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+  return canvas.toDataURL("image/jpeg", 0.92);
+}
+
+async function flipWithCanvas(src: string, horizontal: boolean): Promise<string> {
+  return canvasEdit(src, (ctx, img) => {
+    ctx.translate(horizontal ? img.naturalWidth : 0, horizontal ? 0 : img.naturalHeight);
+    ctx.scale(horizontal ? -1 : 1, horizontal ? 1 : -1);
+    ctx.drawImage(img, 0, 0);
+  });
+}
+
+function clampRect(r: CropRect, maxW: number, maxH: number): CropRect {
+  let { left, top, width, height } = r;
+  width = Math.max(MIN_CROP, Math.min(width, maxW));
+  height = Math.max(MIN_CROP, Math.min(height, maxH));
+  if (left < 0) left = 0;
+  if (top < 0) top = 0;
+  if (left + width > maxW) left = maxW - width;
+  if (top + height > maxH) top = maxH - height;
+  return { left, top, width, height };
+}
+
 export default function Edit() {
   const showToast = useUIStore((s) => s.showToast);
   const apiKey = useSettingsStore((s) => s.apiKey);
@@ -42,16 +148,15 @@ export default function Edit() {
   const {
     images: galleryImages,
     selectedImageId,
-    templates,
     isLoading: galleryLoading,
     selectImage,
-    setTemplates,
     setImages,
     addImage,
     setIsLoading: setGalleryLoading,
   } = useGalleryStore();
 
   const selectedImage = galleryImages.find((img) => img.id === selectedImageId);
+  const sortedImages = [...galleryImages].sort((a, b) => a.createdAt - b.createdAt);
 
   // Full-res data URL for the selected image
   const [fullResUrl, setFullResUrl] = useState<string | null>(null);
@@ -68,12 +173,235 @@ export default function Edit() {
   // AI edit state
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Load built-in templates
-  useEffect(() => {
-    if (templates.length === 0) {
-      setTemplates(BUILTIN_TEMPLATES);
+  // --- Crop state (Canva-style) ---
+  const [cropMode, setCropMode] = useState(false);
+  const [cropRect, setCropRect] = useState<CropRect | null>(null);
+  const [cropAspect, setCropAspect] = useState("free");
+  // Drag state
+  const [cropDrag, setCropDrag] = useState<{
+    handle: string;
+    startX: number;
+    startY: number;
+    origRect: CropRect;
+  } | null>(null);
+  const [cropCursor, setCropCursor] = useState("default");
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // ---- Cursor update on mouse move over handles ----
+  const handleCropHover = useCallback((e: React.MouseEvent) => {
+    if (!cropRect || cropDrag) return;
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    setCropCursor(cursorForHandle(getHandleAt(mx, my, cropRect)));
+  }, [cropRect, cropDrag]);
+
+  // ---- Mouse down: detect handle or start move ----
+  const handleCropMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!cropRect) return;
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const handle = getHandleAt(mx, my, cropRect);
+    if (!handle) return;
+    e.preventDefault();
+    setCropDrag({ handle, startX: mx, startY: my, origRect: { ...cropRect } });
+  }, [cropRect]);
+
+  // ---- Mouse move during drag ----
+  const handleCropMouseMove = useCallback((e: React.MouseEvent) => {
+    const drag = cropDrag;
+    if (!drag || !cropRect) return;
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const dx = mx - drag.startX;
+    const dy = my - drag.startY;
+
+    const over = previewRef.current!;
+    const pw = over.clientWidth;
+    const ph = over.clientHeight;
+
+    if (drag.handle === "move") {
+      // Move the rect
+      const next = clampRect({
+        left: drag.origRect.left + dx,
+        top: drag.origRect.top + dy,
+        width: drag.origRect.width,
+        height: drag.origRect.height,
+      }, pw, ph);
+      setCropRect(next);
+      return;
     }
-  }, [templates.length, setTemplates]);
+
+    // Resize
+    let { left, top, width, height } = drag.origRect;
+
+    // Apply free resize first, then constrain if aspect locked
+    switch (drag.handle) {
+      case "se": width += dx; height += dy; break;
+      case "sw": left += dx; width -= dx; height += dy; break;
+      case "ne": width += dx; top += dy; height -= dy; break;
+      case "nw": left += dx; width -= dx; top += dy; height -= dy; break;
+      case "n": top += dy; height -= dy; break;
+      case "s": height += dy; break;
+      case "e": width += dx; break;
+      case "w": left += dx; width -= dx; break;
+    }
+
+    // Enforce minimum
+    if (width < MIN_CROP) width = MIN_CROP;
+    if (height < MIN_CROP) height = MIN_CROP;
+
+    // Aspect ratio constraint (corner handles only)
+    if (cropAspect !== "free" && !["n", "s", "e", "w"].includes(drag.handle)) {
+      const [aw, ah] = cropAspect.split(":").map(Number);
+      const ratio = aw / ah;
+
+      // Determine anchor corner (opposite of handle)
+      const anchorX = drag.handle.includes("w") ? drag.origRect.left + drag.origRect.width : drag.origRect.left;
+      const anchorY = drag.handle.includes("n") ? drag.origRect.top + drag.origRect.height : drag.origRect.top;
+
+      // Get signed distance from anchor to mouse
+      const distX = drag.handle.includes("w") ? anchorX - mx : mx - anchorX;
+      const distY = drag.handle.includes("n") ? anchorY - my : my - anchorY;
+
+      let newW: number, newH: number;
+      // Use the larger distance as driver
+      if (Math.abs(distX) > Math.abs(distY)) {
+        newW = Math.max(MIN_CROP, Math.abs(distX));
+        newH = newW / ratio;
+      } else {
+        newH = Math.max(MIN_CROP, Math.abs(distY));
+        newW = newH * ratio;
+      }
+
+      // Recalculate position
+      if (drag.handle.includes("e")) left = drag.origRect.left;
+      else left = anchorX - newW;
+
+      if (drag.handle.includes("s")) top = drag.origRect.top;
+      else top = anchorY - newH;
+
+      width = newW;
+      height = newH;
+    }
+
+    setCropRect(clampRect({ left, top, width, height }, pw, ph));
+  }, [cropDrag, cropRect, cropAspect]);
+
+  const handleCropMouseUp = useCallback(() => {
+    setCropDrag(null);
+  }, []);
+
+  // ---- Init / deactivate crop ----
+  const handleToggleCrop = useCallback(() => {
+    if (!cropMode) {
+      const imgEl = document.getElementById("preview-img") as HTMLImageElement | null;
+      if (!imgEl) return;
+      const container = imgEl.parentElement;
+      if (!container) return;
+      const imgRect = imgEl.getBoundingClientRect();
+      const contRect = container.getBoundingClientRect();
+      const left = Math.max(0, imgRect.left - contRect.left);
+      const top = Math.max(0, imgRect.top - contRect.top);
+      const width = Math.min(container.clientWidth - left, imgRect.width);
+      const height = Math.min(container.clientHeight - top, imgRect.height);
+      setCropRect({ left, top, width, height });
+      setCropMode(true);
+      setCropDrag(null);
+    } else {
+      setCropMode(false);
+      setCropRect(null);
+      setCropDrag(null);
+    }
+  }, [cropMode]);
+
+  const handleCancelCrop = useCallback(() => {
+    setCropMode(false);
+    setCropRect(null);
+    setCropDrag(null);
+  }, []);
+
+  // ---- Apply crop ----
+  const handleApplyCrop = useCallback(async () => {
+    if (!cropRect || !selectedImage) return;
+    const imgEl = document.getElementById("preview-img") as HTMLImageElement | null;
+    const overlay = previewRef.current;
+    if (!imgEl || !overlay) return;
+
+    const imgRect = imgEl.getBoundingClientRect();
+    const ovRect = overlay.getBoundingClientRect();
+    const scaleX = imgEl.naturalWidth / imgRect.width;
+    const scaleY = imgEl.naturalHeight / imgRect.height;
+
+    // cropRect is relative to overlay — subtract image offset
+    const relLeft = cropRect.left - (imgRect.left - ovRect.left);
+    const relTop = cropRect.top - (imgRect.top - ovRect.top);
+
+    const sx = Math.round(Math.max(0, relLeft * scaleX));
+    const sy = Math.round(Math.max(0, relTop * scaleY));
+    const sw = Math.round(Math.min(cropRect.width * scaleX, imgEl.naturalWidth - sx));
+    const sh = Math.round(Math.min(cropRect.height * scaleY, imgEl.naturalHeight - sy));
+
+    if (sw < 5 || sh < 5) {
+      showToast("Selection too small", "error");
+      return;
+    }
+
+    const src = fullResUrl ?? selectedImage.dataUrl;
+    const img = await loadImage(src);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(sw);
+    canvas.height = Math.round(sh);
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), 0, 0, Math.round(sw), Math.round(sh));
+    const result = canvas.toDataURL("image/jpeg", 0.92);
+
+    setFullResUrl(result);
+    setCropMode(false);
+    setCropRect(null);
+    setCropDrag(null);
+    showToast("Image cropped", "success");
+  }, [cropRect, selectedImage, fullResUrl, showToast]);
+
+  // ---- Set aspect ratio & auto-adjust crop rect ----
+  const handleSetCropAspect = useCallback((aspect: string) => {
+    setCropAspect(aspect);
+    if (!cropRect || aspect === "free") return;
+
+    const [aw, ah] = aspect.split(":").map(Number);
+    const ratio = aw / ah;
+    const { left, top, width, height } = cropRect;
+
+    // Fit ratio within container bounds, centered on current selection
+    const overlay = previewRef.current;
+    const container = document.getElementById("preview-img")?.parentElement;
+    const maxW = overlay?.clientWidth ?? container?.clientWidth ?? width;
+    const maxH = overlay?.clientHeight ?? container?.clientHeight ?? height;
+
+    let newW: number, newH: number;
+    if (maxW / maxH > ratio) {
+      newH = maxH;
+      newW = maxH * ratio;
+    } else {
+      newW = maxW;
+      newH = maxW / ratio;
+    }
+
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+
+    setCropRect(clampRect({
+      left: centerX - newW / 2,
+      top: centerY - newH / 2,
+      width: newW,
+      height: newH,
+    }, maxW, maxH));
+  }, [cropRect]);
 
   // Load full-res when image selected
   useEffect(() => {
@@ -87,6 +415,15 @@ export default function Edit() {
       } catch { /* fallback to thumbnail */ }
     })();
     return () => { cancelled = true; };
+  }, [selectedImage?.id]);
+
+  // Exit crop when image changes
+  useEffect(() => {
+    if (cropMode) {
+      setCropMode(false);
+      setCropRect(null);
+      setCropDrag(null);
+    }
   }, [selectedImage?.id]);
 
   // Open folder
@@ -105,7 +442,6 @@ export default function Edit() {
         const name = filePath.split("/").pop() ?? "image";
         const dataUrl = await readFileAsDataUrl(filePath);
 
-        // Create thumbnail
         const img = new Image();
         await new Promise<void>((resolve, reject) => {
           img.onload = () => resolve();
@@ -143,13 +479,11 @@ export default function Edit() {
     }
   }, [addImage, setImages, selectImage, setGalleryLoading, showToast]);
 
-  // Filter select
   const handleFilterSelect = useCallback((key: string, css: string) => {
     setSelectedFilter(key);
     setFilterCss(css);
   }, []);
 
-  // Attach reference images
   const handleAttachImages = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
@@ -166,7 +500,6 @@ export default function Edit() {
     setAttachedImages((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  // AI Edit
   const handleAiEdit = useCallback(async (prompt: string) => {
     if (!apiKey || !selectedImage) return;
     setAiLoading(true);
@@ -175,7 +508,6 @@ export default function Edit() {
       const extraImages = attachedImages.map((img) => img.dataUrl);
       const model = useSettingsStore.getState().editModel;
       const result = await editImage(apiKey, model, source, prompt, extraImages);
-      // Show result by setting it as the current image
       setFullResUrl(result);
       setAttachedImages([]);
       setSelectedFilter("original");
@@ -188,7 +520,6 @@ export default function Edit() {
     }
   }, [apiKey, selectedImage, fullResUrl, attachedImages, showToast]);
 
-  // Save current canvas
   const handleSave = useCallback(async () => {
     const canvas = canvasRef.current;
     const imgEl = document.querySelector("#preview-img") as HTMLImageElement | null;
@@ -201,7 +532,6 @@ export default function Edit() {
     const src = fullResUrl ?? selectedImage?.dataUrl;
     if (!src) return;
 
-    // Draw source to canvas then apply filter if any
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d")!;
@@ -225,7 +555,6 @@ export default function Edit() {
     showToast("Image saved!", "success");
   }, [fullResUrl, selectedImage, filterCss, showToast]);
 
-  // Copy to clipboard
   const handleCopy = useCallback(async () => {
     const src = fullResUrl ?? selectedImage?.dataUrl;
     if (!src) return;
@@ -239,11 +568,26 @@ export default function Edit() {
     }
   }, [fullResUrl, selectedImage, showToast]);
 
-  // Quick edit template
-  const handleApplyTemplate = useCallback((template: PromptTemplate) => {
-    if (!selectedImage) return;
-    handleAiEdit(template.prompt);
-  }, [selectedImage, handleAiEdit]);
+  // --- Canvas operations ---
+  const currentSrc = fullResUrl ?? selectedImage?.dataUrl ?? null;
+
+  const handleRotate = useCallback(async (deg: number) => {
+    if (!currentSrc) return;
+    try {
+      const result = await rotateWithCanvas(currentSrc, deg);
+      setFullResUrl(result);
+      showToast(`Rotated ${deg}°`, "success");
+    } catch { showToast("Rotation failed", "error"); }
+  }, [currentSrc, showToast]);
+
+  const handleFlip = useCallback(async (horizontal: boolean) => {
+    if (!currentSrc) return;
+    try {
+      const result = await flipWithCanvas(currentSrc, horizontal);
+      setFullResUrl(result);
+      showToast(horizontal ? "Flipped horizontally" : "Flipped vertically", "success");
+    } catch { showToast("Flip failed", "error"); }
+  }, [currentSrc, showToast]);
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -271,7 +615,7 @@ export default function Edit() {
         <div className="flex flex-1 flex-col overflow-hidden bg-[#e8e8e8]">
           <div className="flex flex-1 items-center justify-center p-4">
             {fullResUrl || selectedImage ? (
-              <div className="max-h-full max-w-full overflow-hidden rounded-xl bg-white shadow-md">
+              <div className="relative max-h-full max-w-full overflow-hidden rounded-xl bg-white shadow-md">
                 <img
                   id="preview-img"
                   src={fullResUrl ?? selectedImage!.dataUrl}
@@ -279,6 +623,87 @@ export default function Edit() {
                   className="max-h-[calc(100vh-220px)] max-w-full object-contain"
                   style={{ filter: filterCss || undefined }}
                 />
+                {cropMode && cropRect && (
+                  <div
+                    ref={previewRef}
+                    className="absolute inset-0 z-10"
+                    style={{ cursor: cropCursor }}
+                    onMouseEnter={handleCropHover}
+                    onMouseMove={(e) => {
+                      handleCropHover(e);
+                      handleCropMouseMove(e);
+                    }}
+                    onMouseDown={handleCropMouseDown}
+                    onMouseUp={handleCropMouseUp}
+                    onMouseLeave={handleCropMouseUp}
+                  >
+                    {/* Dark overlay outside rect */}
+                    <div
+                      className="absolute pointer-events-none"
+                      style={{
+                        left: cropRect.left,
+                        top: cropRect.top,
+                        width: cropRect.width,
+                        height: cropRect.height,
+                        boxShadow: "0 0 0 9999px rgba(0,0,0,0.45)",
+                        zIndex: 1,
+                      }}
+                    />
+
+                    {/* Rule-of-thirds grid */}
+                    <div
+                      className="absolute pointer-events-none"
+                      style={{
+                        left: cropRect.left,
+                        top: cropRect.top,
+                        width: cropRect.width,
+                        height: cropRect.height,
+                        zIndex: 2,
+                      }}
+                    >
+                      {/* Vertical lines */}
+                      <div className="absolute top-0 bottom-0 w-px bg-white/30" style={{ left: "33.33%" }} />
+                      <div className="absolute top-0 bottom-0 w-px bg-white/30" style={{ left: "66.66%" }} />
+                      {/* Horizontal lines */}
+                      <div className="absolute left-0 right-0 h-px bg-white/30" style={{ top: "33.33%" }} />
+                      <div className="absolute left-0 right-0 h-px bg-white/30" style={{ top: "66.66%" }} />
+                    </div>
+
+                    {/* Drag handles (corners + edges) */}
+                    {(["nw", "ne", "sw", "se", "n", "s", "e", "w"] as const).map((h) => {
+                      let cx: number, cy: number;
+                      const r = cropRect!;
+                      switch (h) {
+                        case "nw": cx = r.left; cy = r.top; break;
+                        case "ne": cx = r.left + r.width; cy = r.top; break;
+                        case "sw": cx = r.left; cy = r.top + r.height; break;
+                        case "se": cx = r.left + r.width; cy = r.top + r.height; break;
+                        case "n": cx = r.left + r.width / 2; cy = r.top; break;
+                        case "s": cx = r.left + r.width / 2; cy = r.top + r.height; break;
+                        case "e": cx = r.left + r.width; cy = r.top + r.height / 2; break;
+                        case "w": cx = r.left; cy = r.top + r.height / 2; break;
+                      }
+                      const isCorner = ["nw", "ne", "sw", "se"].includes(h);
+                      return (
+                        <div
+                          key={h}
+                          className="absolute pointer-events-none"
+                          style={{
+                            left: cx - 6,
+                            top: cy - 6,
+                            width: isCorner ? 14 : 10,
+                            height: isCorner ? 14 : 10,
+                            borderRadius: isCorner ? 2 : "50%",
+                            backgroundColor: "white",
+                            border: "2px solid #555",
+                            zIndex: 3,
+                            transform: isCorner ? "rotate(45deg)" : undefined,
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3 text-text-tertiary">
@@ -291,7 +716,7 @@ export default function Edit() {
           {/* Image strip at bottom */}
           <div className="border-t border-border bg-bg-primary">
             <ImageStrip
-              images={galleryImages}
+              images={sortedImages}
               selectedId={selectedImageId}
               onSelect={selectImage}
             />
@@ -309,8 +734,14 @@ export default function Edit() {
             selectedFilter={selectedFilter}
             onAiEdit={handleAiEdit}
             aiLoading={aiLoading}
-            templates={templates}
-            onApplyTemplate={handleApplyTemplate}
+            cropMode={cropMode}
+            cropAspect={cropAspect}
+            onToggleCrop={handleToggleCrop}
+            onApplyCrop={handleApplyCrop}
+            onCancelCrop={handleCancelCrop}
+            onSetCropAspect={handleSetCropAspect}
+            onRotate={handleRotate}
+            onFlip={handleFlip}
             onSave={handleSave}
             onCopy={handleCopy}
           />

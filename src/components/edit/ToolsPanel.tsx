@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Send, Sparkles, Filter, Zap, ImagePlus } from "lucide-react";
-import type { PromptTemplate } from "../../types/template";
+import {
+  ChevronDown, ChevronRight, Send, Sparkles, Filter,
+  ImagePlus, Crop, RotateCcw, FlipHorizontal,
+} from "lucide-react";
 import FilterControls from "../editor/FilterControls";
-import PromptTemplateList from "../gallery/PromptTemplateList";
 import Button from "../common/Button";
 
 interface ToolsPanelProps {
@@ -14,11 +15,28 @@ interface ToolsPanelProps {
   selectedFilter: string;
   onAiEdit: (prompt: string) => void;
   aiLoading: boolean;
-  templates: PromptTemplate[];
-  onApplyTemplate: (template: PromptTemplate) => void;
+  cropMode: boolean;
+  cropAspect: string;
+  onToggleCrop: () => void;
+  onApplyCrop: () => void;
+  onCancelCrop: () => void;
+  onSetCropAspect: (aspect: string) => void;
+  onRotate: (deg: number) => void;
+  onFlip: (horizontal: boolean) => void;
   onSave: () => void;
   onCopy: () => void;
 }
+
+const ASPECTS = [
+  { key: "free", label: "Free" },
+  { key: "1:1", label: "□  1:1" },
+  { key: "4:5", label: "▯  4:5" },
+  { key: "2:3", label: "▯  2:3" },
+  { key: "3:2", label: "▯  3:2" },
+  { key: "4:3", label: "▯  4:3" },
+  { key: "16:9", label: "▬ 16:9" },
+  { key: "9:16", label: "▯  9:16" },
+];
 
 function CollapsibleSection({
   title,
@@ -56,8 +74,14 @@ export default function ToolsPanel({
   selectedFilter,
   onAiEdit,
   aiLoading,
-  templates,
-  onApplyTemplate,
+  cropMode,
+  cropAspect,
+  onToggleCrop,
+  onApplyCrop,
+  onCancelCrop,
+  onSetCropAspect,
+  onRotate,
+  onFlip,
   onSave,
   onCopy,
 }: ToolsPanelProps) {
@@ -81,7 +105,6 @@ export default function ToolsPanel({
         {/* AI Edit */}
         <CollapsibleSection title="AI Edit" icon={<Sparkles size={14} />} defaultOpen>
           <div className="flex flex-col gap-2">
-            {/* Attached reference images */}
             {attachedImages.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {attachedImages.map((img, i) => (
@@ -141,15 +164,73 @@ export default function ToolsPanel({
           <FilterControls selected={selectedFilter} onSelect={onFilterSelect} />
         </CollapsibleSection>
 
-        {/* Quick Edits */}
-        {templates.length > 0 && (
-          <CollapsibleSection title="Quick Edits" icon={<Zap size={14} />}>
-            <PromptTemplateList
-              templates={templates}
-              onSelect={onApplyTemplate}
-            />
-          </CollapsibleSection>
-        )}
+        {/* Crop */}
+        <CollapsibleSection title="Crop" icon={<Crop size={14} />} defaultOpen={cropMode}>
+          <div className="flex flex-col gap-2">
+            {!cropMode ? (
+              <Button size="sm" variant="secondary" onClick={onToggleCrop} disabled={!hasImage} className="w-full">
+                <Crop size={12} />
+                Enable Crop
+              </Button>
+            ) : (
+              <>
+                <p className="text-xs font-medium text-text-primary">Aspect ratio</p>
+                <div className="flex flex-wrap gap-1">
+                  {ASPECTS.map((a) => (
+                    <button
+                      key={a.key}
+                      onClick={() => onSetCropAspect(a.key)}
+                      className={`text-xs px-2 py-1 rounded transition-colors ${
+                        cropAspect === a.key
+                          ? "bg-accent text-white"
+                          : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
+                      }`}
+                    >
+                      {a.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2 mt-1">
+                  <Button size="sm" onClick={onApplyCrop} className="flex-1">
+                    Apply
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={onCancelCrop}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </CollapsibleSection>
+
+        {/* Transform */}
+        <CollapsibleSection title="Transform" icon={<RotateCcw size={14} />}>
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-text-secondary">Rotate</p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="secondary" onClick={() => onRotate(90)} disabled={!hasImage}>
+                ↻ 90°
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => onRotate(180)} disabled={!hasImage}>
+                ↻ 180°
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => onRotate(270)} disabled={!hasImage}>
+                ↺ 90°
+              </Button>
+            </div>
+            <p className="text-xs text-text-secondary mt-1">Flip</p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="secondary" onClick={() => onFlip(true)} disabled={!hasImage}>
+                <FlipHorizontal size={12} />
+                H
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => onFlip(false)} disabled={!hasImage}>
+                <FlipHorizontal size={12} className="rotate-90" />
+                V
+              </Button>
+            </div>
+          </div>
+        </CollapsibleSection>
       </div>
 
       {/* Bottom actions */}
