@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Key, Monitor, FolderOpen, Palette } from "lucide-react";
 import { useSettingsStore } from "../stores/settingsStore";
 import type { AIModel } from "../types/model";
-import { fetchImageModels } from "../services/openrouter";
+import { fetchImageModels, fetchTextModels } from "../services/openrouter";
 import Button from "../components/common/Button";
 import ModelSelector from "../components/common/ModelSelector";
 import { useUIStore } from "../stores/uiStore";
@@ -12,11 +12,13 @@ export default function Settings() {
     apiKey,
     defaultModel,
     editModel,
+    templateModel,
     theme,
     galleryFolder,
     setApiKey,
     setDefaultModel,
     setEditModel,
+    setTemplateModel,
     setTheme,
     setGalleryFolder,
   } = useSettingsStore();
@@ -24,6 +26,8 @@ export default function Settings() {
 
   const [models, setModels] = useState<AIModel[]>([]);
   const [modelsLoading, setModelsLoading] = useState(true);
+  const [textModels, setTextModels] = useState<AIModel[]>([]);
+  const [textModelsLoading, setTextModelsLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -36,6 +40,21 @@ export default function Settings() {
         setModels(AVAILABLE_MODELS);
       } finally {
         setModelsLoading(false);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const key = useSettingsStore.getState().apiKey;
+        const list = await fetchTextModels(key);
+        setTextModels(list);
+      } catch {
+        const { TEXT_MODELS } = await import("../types/model");
+        setTextModels(TEXT_MODELS);
+      } finally {
+        setTextModelsLoading(false);
       }
     })();
   }, []);
@@ -128,6 +147,28 @@ export default function Settings() {
                 models={models}
                 selected={editModel}
                 onSelect={setEditModel}
+              />
+            )}
+          </section>
+
+          {/* Template Model (text) */}
+          <section>
+            <div className="mb-3 flex items-center gap-2">
+              <Monitor size={18} className="text-text-secondary" />
+              <h2 className="text-sm font-medium text-text-primary">
+                Template Model
+              </h2>
+            </div>
+            <p className="mb-2 text-xs text-text-secondary">
+              Text model used to generate prompt templates (e.g. GPT-4o, Claude).
+            </p>
+            {textModelsLoading ? (
+              <p className="text-xs text-text-tertiary py-2">Loading models...</p>
+            ) : (
+              <ModelSelector
+                models={textModels}
+                selected={templateModel}
+                onSelect={setTemplateModel}
               />
             )}
           </section>

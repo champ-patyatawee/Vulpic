@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Sparkles, Image, BookOpen, Settings } from "lucide-react";
+import { Sparkles, Image, Layout, BookOpen, Settings } from "lucide-react";
 import clsx from "clsx";
 
 const navItems = [
   { path: "/generate", icon: Sparkles, label: "Generate" },
   { path: "/edit", icon: Image, label: "Edit" },
+  { path: "/templates", icon: Layout, label: "Templates" },
   { path: "/library", icon: BookOpen, label: "Library" },
   { path: "/settings", icon: Settings, label: "Settings" },
 ];

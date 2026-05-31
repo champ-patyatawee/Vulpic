@@ -74,6 +74,49 @@ export const AVAILABLE_MODELS: AIModel[] = [
   },
 ];
 
+export const TEXT_MODELS: AIModel[] = [
+  {
+    id: "openai/gpt-4o",
+    name: "GPT-4o",
+    provider: "OpenAI",
+    description: "Latest multimodal model — strong at prompt engineering & creative writing",
+    pricing: "$2.50/$10 per 1M tokens",
+    capabilities: ["image-generation", "image-editing", "image-qna"],
+  },
+  {
+    id: "openai/gpt-4o-mini",
+    name: "GPT-4o Mini",
+    provider: "OpenAI",
+    description: "Fast, affordable text generation — great for bulk prompt creation",
+    pricing: "$0.15/$0.60 per 1M tokens",
+    capabilities: ["image-generation", "image-editing", "image-qna"],
+  },
+  {
+    id: "anthropic/claude-3.5-sonnet",
+    name: "Claude 3.5 Sonnet",
+    provider: "Anthropic",
+    description: "Excellent at following complex instructions and structured output",
+    pricing: "$3/$15 per 1M tokens",
+    capabilities: ["image-generation", "image-editing", "image-qna"],
+  },
+  {
+    id: "google/gemini-2.0-flash-001",
+    name: "Gemini 2.0 Flash",
+    provider: "Google",
+    description: "Fast, free-tier friendly text generation",
+    pricing: "Free / $0.10/$0.40 per 1M tokens",
+    capabilities: ["image-generation", "image-editing", "image-qna"],
+  },
+  {
+    id: "meta-llama/llama-3.2-3b-instruct",
+    name: "Llama 3.2 3B",
+    provider: "Meta",
+    description: "Lightweight open model for simple prompt generation tasks",
+    pricing: "$0.06/$0.06 per 1M tokens",
+    capabilities: ["image-generation", "image-editing", "image-qna"],
+  },
+];
+
 /** Return models that are available with the given API keys */
 export function getAvailableModels(
   openrouterKey: string,
@@ -82,4 +125,4 @@ export function getAvailableModels(
   return !!openrouterKey ? AVAILABLE_MODELS : [];
 }
 
-export type ModelId = (typeof AVAILABLE_MODELS)[number]["id"];
+export type ModelId = string;

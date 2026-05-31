@@ -176,6 +176,41 @@ function extractImageFromResponse(content: string): string {
   );
 }
 
+/**
+ * Generate text completion using a text model (for prompt template generation).
+ */
+export async function generateChatCompletion(
+  apiKey: string,
+  model: ModelId,
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<string> {
+  const response = await fetch(BASE, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://vulpic.app",
+      "X-Title": "Vulpic",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "(unreadable)");
+    throw new Error(`OpenRouter API error (${response.status}): ${errorText.slice(0, 500)}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content ?? "";
+}
+
 const MODELS_CACHE = "vulpic-models-cache";
 const CACHE_TTL = 5 * 60 * 1000;
 
@@ -203,7 +238,6 @@ export async function fetchImageModels(apiKey?: string): Promise<AIModel[]> {
 
   const imageModels = items.map((m: any) => {
     const p = m.pricing ?? {};
-    // Use pricing.image for per-image pricing, otherwise use prompt/completion token pricing
     const cost = p.image != null
       ? `$${p.image}/image`
       : p.prompt != null
@@ -231,4 +265,57 @@ export async function fetchImageModels(apiKey?: string): Promise<AIModel[]> {
 
   localStorage.setItem(MODELS_CACHE, JSON.stringify({ data: imageModels, ts: Date.now() }));
   return imageModels;
+}
+
+const TEXT_MODELS_CACHE = "vulpic-text-models-cache";
+
+/**
+ * Fetch all text models from OpenRouter.
+ * Uses the same API but without output_modalities filter to get all models.
+ */
+export async function fetchTextModels(apiKey?: string): Promise<AIModel[]> {
+  const cached = localStorage.getItem(TEXT_MODELS_CACHE);
+  if (cached) {
+    try {
+      const { data, ts } = JSON.parse(cached);
+      if (Date.now() - ts < CACHE_TTL) return data;
+    } catch { /* corrupt cache */ }
+  }
+
+  const res = await fetch("https://openrouter.ai/api/v1/models", {
+    headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined,
+  });
+  if (!res.ok) throw new Error(`OpenRouter API ${res.status}`);
+
+  const body = await res.json();
+  const items: any[] = body.data ?? body ?? [];
+
+  const textModels = items.map((m: any) => {
+    const p = m.pricing ?? {};
+    const cost = p.prompt != null
+      ? `$${p.prompt} / $${p.completion ?? "?"} per 1M`
+      : "Variable";
+    const slug: string = m.id;
+    const provider = slug.startsWith("openai/") ? "OpenAI"
+      : slug.startsWith("google/") ? "Google"
+      : slug.startsWith("anthropic/") ? "Anthropic"
+      : slug.startsWith("meta-llama/") ? "Meta"
+      : slug.startsWith("mistralai/") ? "Mistral"
+      : slug.startsWith("cohere/") ? "Cohere"
+      : slug.startsWith("x-ai/") ? "xAI"
+      : slug.startsWith("deepseek/") ? "DeepSeek"
+      : slug.startsWith("openrouter/") ? "OpenRouter"
+      : slug.split("/")[0] ?? "Other";
+    return {
+      id: m.id,
+      name: m.name?.replace(/^[^:]+:\s*/, "") ?? slug,
+      provider,
+      description: m.description ?? "",
+      pricing: cost,
+      capabilities: ["image-generation" as const, "image-editing" as const, "image-qna" as const],
+    };
+  });
+
+  localStorage.setItem(TEXT_MODELS_CACHE, JSON.stringify({ data: textModels, ts: Date.now() }));
+  return textModels;
 }
