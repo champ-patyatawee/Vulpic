@@ -17,8 +17,8 @@ export default function Sidebar() {
   return (
     <aside className="flex h-full w-16 flex-col items-center border-r border-border bg-bg-secondary py-4">
       {/* Logo / Brand */}
-      <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-white text-sm font-semibold">
-        V
+      <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden">
+        <img src="/logo.jpg" alt="Vulpic" className="h-full w-full object-cover" />
       </div>
 
       {/* Navigation */}
