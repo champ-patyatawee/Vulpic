@@ -11,7 +11,6 @@ function isTauri(): boolean {
 
 /**
  * Download a data URL using the browser's native download mechanism.
- * Works outside Tauri (e.g. in Vite dev server).
  */
 function browserDownload(dataUrl: string, filename: string): void {
   const link = document.createElement("a");
@@ -27,7 +26,6 @@ function browserDownload(dataUrl: string, filename: string): void {
  */
 export async function pickImage(): Promise<{ path: string; name: string } | null> {
   if (!isTauri()) {
-    // Browser fallback: use an input element
     return new Promise((resolve) => {
       const input = document.createElement("input");
       input.type = "file";
@@ -56,10 +54,8 @@ export async function pickImage(): Promise<{ path: string; name: string } | null
   });
 
   if (!result) return null;
-
   const path = result as string;
   const name = path.split("/").pop() ?? "image.png";
-
   return { path, name };
 }
 
@@ -68,7 +64,6 @@ export async function pickImage(): Promise<{ path: string; name: string } | null
  */
 export async function saveImage(dataUrl: string, defaultName: string = "vulpic-edit.png"): Promise<void> {
   if (!isTauri()) {
-    // Browser fallback: trigger a download via an anchor element
     browserDownload(dataUrl, defaultName);
     return;
   }
@@ -76,20 +71,13 @@ export async function saveImage(dataUrl: string, defaultName: string = "vulpic-e
   const savePath = await save({
     defaultPath: defaultName,
     filters: [
-      {
-        name: "PNG Image",
-        extensions: ["png"],
-      },
-      {
-        name: "JPEG Image",
-        extensions: ["jpg", "jpeg"],
-      },
+      { name: "PNG Image", extensions: ["png"] },
+      { name: "JPEG Image", extensions: ["jpg", "jpeg"] },
     ],
   });
 
   if (!savePath) return;
 
-  // Convert base64 to Uint8Array
   const base64Data = dataUrl.split(",")[1] ?? dataUrl;
   const binaryString = atob(base64Data);
   const bytes = new Uint8Array(binaryString.length);
@@ -102,19 +90,26 @@ export async function saveImage(dataUrl: string, defaultName: string = "vulpic-e
 
 /**
  * Read image files from a directory for the gallery.
+ * Returns paths with file modification timestamps.
  */
-export async function readGalleryFolder(folderPath: string): Promise<string[]> {
-  // Use the Tauri fs plugin to read directory
+export async function readGalleryFolder(folderPath: string): Promise<{ path: string; mtime: number }[]> {
   const { readDir } = await import("@tauri-apps/plugin-fs");
 
   const entries = await readDir(folderPath);
   const imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp"];
-  
-  return entries
-    .filter((entry) => {
-      if (!entry.name) return false;
-      const ext = entry.name.toLowerCase().split(".").pop();
-      return ext && imageExtensions.includes(`.${ext}`);
-    })
-    .map((entry) => `${folderPath}/${entry.name}`);
+
+  const result: { path: string; mtime: number }[] = [];
+
+  for (const entry of entries) {
+    if (!entry.name) continue;
+    const ext = entry.name.toLowerCase().split(".").pop();
+    if (!ext || !imageExtensions.includes(`.${ext}`)) continue;
+
+    result.push({
+      path: `${folderPath}/${entry.name}`,
+      mtime: (entry as any).mtime ?? Date.now(),
+    });
+  }
+
+  return result;
 }

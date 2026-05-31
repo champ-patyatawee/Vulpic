@@ -156,7 +156,35 @@ export default function Edit() {
   } = useGalleryStore();
 
   const selectedImage = galleryImages.find((img) => img.id === selectedImageId);
-  const sortedImages = [...galleryImages].sort((a, b) => a.createdAt - b.createdAt);
+  const [sortBy, setSortBy] = useState("mtime-desc");
+  const [showSort, setShowSort] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showSort) return;
+    const handler = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setShowSort(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showSort]);
+
+  const SORT_OPTIONS = [
+    { value: "mtime-desc", label: "Date modified (newest)" },
+    { value: "mtime-asc", label: "Date modified (oldest)" },
+    { value: "name-asc", label: "Name (A-Z)" },
+  ];
+  const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Sort";
+
+  const sortedImages = [...galleryImages].sort((a, b) => {
+    switch (sortBy) {
+      case "mtime-asc": return a.createdAt - b.createdAt;
+      case "name-asc": return a.name.localeCompare(b.name);
+      default: return b.createdAt - a.createdAt; // mtime-desc
+    }
+  });
 
   // Full-res data URL for the selected image
   const [fullResUrl, setFullResUrl] = useState<string | null>(null);
@@ -172,6 +200,8 @@ export default function Edit() {
 
   // AI edit state
   const [aiLoading, setAiLoading] = useState(false);
+  const [editAspect, setEditAspect] = useState("");
+  const [editSize, setEditSize] = useState("");
 
   // --- Crop state (Canva-style) ---
   const [cropMode, setCropMode] = useState(false);
@@ -436,11 +466,11 @@ export default function Edit() {
       setImages([]);
       selectImage(null);
       setGalleryLoading(true);
-      const paths = await readGalleryFolder(folder as string);
+      const files = await readGalleryFolder(folder as string);
 
-      for (const filePath of paths) {
-        const name = filePath.split("/").pop() ?? "image";
-        const dataUrl = await readFileAsDataUrl(filePath);
+      for (const file of files) {
+        const name = file.path.split("/").pop() ?? "image";
+        const dataUrl = await readFileAsDataUrl(file.path);
 
         const img = new Image();
         await new Promise<void>((resolve, reject) => {
@@ -464,11 +494,11 @@ export default function Edit() {
         addImage({
           id: crypto.randomUUID(),
           name,
-          path: filePath,
+          path: file.path,
           dataUrl: thumb,
           width: img.naturalWidth,
           height: img.naturalHeight,
-          createdAt: Date.now(),
+          createdAt: file.mtime,
         });
       }
     } catch (err) {
@@ -507,8 +537,21 @@ export default function Edit() {
       const source = fullResUrl ?? selectedImage.dataUrl;
       const extraImages = attachedImages.map((img) => img.dataUrl);
       const model = useSettingsStore.getState().editModel;
-      const result = await editImage(apiKey, model, source, prompt, extraImages);
-      setFullResUrl(result);
+      const imgConfig: import("../services/openrouter").ImageConfig = {};
+      if (editAspect) imgConfig.aspect_ratio = editAspect;
+      if (editSize) imgConfig.image_size = editSize;
+      const result = await editImage(apiKey, model, source, prompt, extraImages, imgConfig);
+
+      // Convert to persistent data URL so it can be used as source again
+      const img = await loadImage(result);
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+      const permanentUrl = canvas.toDataURL("image/jpeg", 0.92);
+
+      setFullResUrl(permanentUrl);
       setAttachedImages([]);
       setSelectedFilter("original");
       setFilterCss("");
@@ -715,6 +758,37 @@ export default function Edit() {
 
           {/* Image strip at bottom */}
           <div className="border-t border-border bg-bg-primary">
+            <div className="flex items-center justify-between px-4 py-1.5 border-b border-border">
+              <span className="text-[11px] text-text-tertiary">{galleryImages.length} images</span>
+              <div className="relative" ref={sortRef}>
+                <button
+                  onClick={() => setShowSort(!showSort)}
+                  className="flex items-center gap-1 text-[11px] text-text-secondary hover:text-text-primary transition-colors rounded-md border border-border bg-white px-2 py-1"
+                >
+                  {currentSortLabel}
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`transition-transform ${showSort ? "rotate-180" : ""}`}>
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                {showSort && (
+                  <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-border bg-white shadow-lg overflow-hidden">
+                    {SORT_OPTIONS.map((o) => (
+                      <button
+                        key={o.value}
+                        onClick={() => { setSortBy(o.value); setShowSort(false); }}
+                        className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                          sortBy === o.value
+                            ? "bg-accent/10 text-accent font-medium"
+                            : "text-text-secondary hover:bg-bg-secondary"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
             <ImageStrip
               images={sortedImages}
               selectedId={selectedImageId}
@@ -742,6 +816,10 @@ export default function Edit() {
             onSetCropAspect={handleSetCropAspect}
             onRotate={handleRotate}
             onFlip={handleFlip}
+            editAspect={editAspect}
+            editSize={editSize}
+            onSetEditAspect={setEditAspect}
+            onSetEditSize={setEditSize}
             onSave={handleSave}
             onCopy={handleCopy}
           />

@@ -30,6 +30,7 @@ export default function Templates() {
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [idea, setIdea] = useState("");
   const resultsRef = useRef<HTMLDivElement>(null);
 
   // Close preview on Escape
@@ -49,6 +50,13 @@ export default function Templates() {
     const resultId = crypto.randomUUID();
     setGeneratingId(resultId);
 
+    // Build instruction with user idea if provided
+    let promptInstruction = tpl.promptInstruction;
+    if (idea.trim()) {
+      promptInstruction = `The user wants a design about: "${idea.trim()}". ${tpl.promptInstruction} Make sure the final design clearly reflects this idea.`;
+      setIdea("");
+    }
+
     // Add placeholder immediately
     addSaved({
       id: resultId,
@@ -61,14 +69,14 @@ export default function Templates() {
 
     try {
       // Step 1: Generate prompt
-      const systemPrompt = "You are a professional graphic design prompt engineer. Generate exactly 1 detailed image generation prompt. Return ONLY the prompt text, no numbering or prefixes.";
-      const text = await generateChatCompletion(apiKey, catModels, systemPrompt, tpl.promptInstruction);
+      const systemPrompt = "You are a creative prompt generator. Generate exactly 1 image generation prompt that is completely original — invent something you have never described before. Be specific, detailed, and unexpected. Avoid all clichés: no mountains, sunsets, trees, beaches, stars, hearts, or nature scenes. Return ONLY the prompt text.";
+      const text = await generateChatCompletion(apiKey, catModels, systemPrompt, promptInstruction);
       const prompt = text.replace(/^\d+[\.\)]\s*/, "").trim();
 
       // Update with prompt
       useSavedTemplatesStore.getState().addSaved({
         id: resultId,
-        prompt: prompt || tpl.promptInstruction,
+        prompt: prompt || promptInstruction,
         dataUrl: "",
         categoryName: tpl.name,
         itemName: tpl.name,
@@ -78,7 +86,7 @@ export default function Templates() {
       useSavedTemplatesStore.getState().removeSaved(resultId);
       useSavedTemplatesStore.getState().addSaved({
         id: resultId,
-        prompt: prompt || tpl.promptInstruction,
+        prompt: prompt || promptInstruction,
         dataUrl: "",
         categoryName: tpl.name,
         itemName: tpl.name,
@@ -87,11 +95,11 @@ export default function Templates() {
 
       // Step 2: Generate image
       try {
-        const url = await generateImage(apiKey, genModel, prompt || tpl.promptInstruction);
+        const url = await generateImage(apiKey, genModel, prompt || promptInstruction);
         useSavedTemplatesStore.getState().removeSaved(resultId);
         addSaved({
           id: resultId,
-          prompt: prompt || tpl.promptInstruction,
+          prompt: prompt || promptInstruction,
           dataUrl: url,
           categoryName: tpl.name,
           itemName: tpl.name,
@@ -101,7 +109,7 @@ export default function Templates() {
         useSavedTemplatesStore.getState().removeSaved(resultId);
         addSaved({
           id: resultId,
-          prompt: prompt || tpl.promptInstruction,
+          prompt: prompt || promptInstruction,
           dataUrl: "",
           categoryName: tpl.name,
           itemName: tpl.name,
@@ -157,6 +165,15 @@ export default function Templates() {
           <div className="px-6 py-5 border-b border-border">
             <h1 className="text-lg font-medium text-text-primary">Templates</h1>
             <p className="text-sm text-text-secondary mt-0.5">Click any template to instantly generate a design</p>
+            <div className="mt-3 max-w-xl">
+              <input
+                type="text"
+                value={idea}
+                onChange={(e) => setIdea(e.target.value)}
+                placeholder="Got an idea? Type it here (optional)..."
+                className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors placeholder:text-text-tertiary"
+              />
+            </div>
           </div>
 
           {/* Template cards grid */}

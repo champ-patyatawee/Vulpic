@@ -1,17 +1,42 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, ImagePlus, Trash2 } from "lucide-react";
+import { Send, Sparkles, ImagePlus, Trash2, Settings2 } from "lucide-react";
 import TopBar from "../components/layout/TopBar";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useUIStore } from "../stores/uiStore";
 import { useChatStore } from "../stores/chatStore";
 import { generateImage, editImage } from "../services/openrouter";
+import type { ImageConfig } from "../services/openrouter";
 import ResultActions from "../components/editor/ResultActions";
 import type { Message } from "../types/message";
+
+const ASPECT_OPTIONS = [
+  { value: "", label: "Auto" },
+  { value: "1:1", label: "1:1" },
+  { value: "16:9", label: "16:9" },
+  { value: "9:16", label: "9:16" },
+  { value: "4:3", label: "4:3" },
+  { value: "3:4", label: "3:4" },
+  { value: "4:5", label: "4:5" },
+  { value: "3:2", label: "3:2" },
+  { value: "2:3", label: "2:3" },
+];
+
+const SIZE_OPTIONS = [
+  { value: "", label: "Auto" },
+  { value: "0.5K", label: "0.5K" },
+  { value: "1K", label: "1K" },
+  { value: "2K", label: "2K" },
+  { value: "4K", label: "4K" },
+];
 
 export default function Generate() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [refImages, setRefImages] = useState<{ dataUrl: string; name: string }[]>([]);
+  const [aspectRatio, setAspectRatio] = useState("");
+  const [imageSize, setImageSize] = useState("");
+  const [showConfig, setShowConfig] = useState(false);
+  const configRef = useRef<HTMLDivElement>(null);
   const showToast = useUIStore((s) => s.showToast);
   const messages = useChatStore((s) => {
     const conv = s.conversations.find((c) => c.id === s.activeConversationId);
@@ -33,6 +58,18 @@ export default function Generate() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Close config popover on click outside
+  useEffect(() => {
+    if (!showConfig) return;
+    const handler = (e: MouseEvent) => {
+      if (configRef.current && !configRef.current.contains(e.target as Node)) {
+        setShowConfig(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showConfig]);
 
   const handleAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -87,9 +124,13 @@ export default function Generate() {
 
     try {
       const modelId = useSettingsStore.getState().defaultModel;
+      const imgConfig: ImageConfig = {};
+      if (aspectRatio) imgConfig.aspect_ratio = aspectRatio;
+      if (imageSize) imgConfig.image_size = imageSize;
+
       const resultUrl = refImages.length > 0
-        ? await editImage(apiKey, modelId, refImages[0].dataUrl, text, refImages.slice(1).map((r) => r.dataUrl))
-        : await generateImage(apiKey, modelId, text);
+        ? await editImage(apiKey, modelId, refImages[0].dataUrl, text, refImages.slice(1).map((r) => r.dataUrl), imgConfig)
+        : await generateImage(apiKey, modelId, text, imgConfig);
       updateMessage(convId, loadingMsgId, {
         id: loadingMsgId,
         role: "assistant",
@@ -218,6 +259,60 @@ export default function Generate() {
             )}
 
             <div className="flex gap-2">
+              <div className="relative" ref={configRef}>
+                <button
+                  onClick={() => setShowConfig(!showConfig)}
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border transition-colors ${
+                    showConfig || aspectRatio || imageSize
+                      ? "border-accent text-accent bg-accent/5"
+                      : "border-border text-text-tertiary hover:bg-bg-secondary hover:text-text-primary"
+                  }`}
+                  title="Image settings"
+                >
+                  <Settings2 size={16} />
+                </button>
+                {showConfig && (
+                  <div className="absolute bottom-full left-0 mb-2 z-50 w-56 rounded-xl border border-border bg-white shadow-lg p-3 space-y-3">
+                    <div>
+                      <p className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">Aspect Ratio</p>
+                      <div className="flex flex-wrap gap-1">
+                        {ASPECT_OPTIONS.map((o) => (
+                          <button
+                            key={o.value}
+                            onClick={() => setAspectRatio(o.value)}
+                            className={`text-[11px] px-2 py-1 rounded ${
+                              aspectRatio === o.value
+                                ? "bg-accent text-white"
+                                : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
+                            }`}
+                          >
+                            {o.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">Image Size</p>
+                      <div className="flex gap-1">
+                        {SIZE_OPTIONS.map((o) => (
+                          <button
+                            key={o.value}
+                            onClick={() => setImageSize(o.value)}
+                            className={`text-[11px] px-2 py-1 rounded ${
+                              imageSize === o.value
+                                ? "bg-accent text-white"
+                                : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
+                            }`}
+                          >
+                            {o.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={() => fileRef.current?.click()}
                 className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-border text-text-tertiary hover:bg-bg-secondary hover:text-text-primary transition-colors"

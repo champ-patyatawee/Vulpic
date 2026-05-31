@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   ChevronDown, ChevronRight, Send, Sparkles, Filter,
-  ImagePlus, Crop, RotateCcw, FlipHorizontal,
+  ImagePlus, Crop, RotateCcw, FlipHorizontal, Settings2,
 } from "lucide-react";
 import FilterControls from "../editor/FilterControls";
 import Button from "../common/Button";
@@ -23,6 +24,10 @@ interface ToolsPanelProps {
   onSetCropAspect: (aspect: string) => void;
   onRotate: (deg: number) => void;
   onFlip: (horizontal: boolean) => void;
+  editAspect: string;
+  editSize: string;
+  onSetEditAspect: (v: string) => void;
+  onSetEditSize: (v: string) => void;
   onSave: () => void;
   onCopy: () => void;
 }
@@ -82,10 +87,58 @@ export default function ToolsPanel({
   onSetCropAspect,
   onRotate,
   onFlip,
+  editAspect,
+  editSize,
+  onSetEditAspect,
+  onSetEditSize,
   onSave,
   onCopy,
 }: ToolsPanelProps) {
   const [aiPrompt, setAiPrompt] = useState("");
+  const [showImgConfig, setShowImgConfig] = useState(false);
+  const imgConfigRef = useRef<HTMLDivElement>(null);
+  const imgConfigBtnRef = useRef<HTMLButtonElement>(null);
+  const [configPos, setConfigPos] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (!showImgConfig) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node;
+      const isOutside = 
+        !imgConfigRef.current?.contains(target) &&
+        !imgConfigBtnRef.current?.contains(target);
+      if (isOutside) {
+        setShowImgConfig(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showImgConfig]);
+
+  const openConfig = () => {
+    if (imgConfigBtnRef.current) {
+      const rect = imgConfigBtnRef.current.getBoundingClientRect();
+      setConfigPos({ top: rect.top - 8, left: rect.left });
+    }
+    setShowImgConfig(true);
+  };
+
+  const ASPECT_OPTS = [
+    { value: "", label: "Auto" },
+    { value: "1:1", label: "1:1" },
+    { value: "16:9", label: "16:9" },
+    { value: "9:16", label: "9:16" },
+    { value: "4:3", label: "4:3" },
+    { value: "3:4", label: "3:4" },
+    { value: "4:5", label: "4:5" },
+  ];
+
+  const SIZE_OPTS = [
+    { value: "", label: "Auto" },
+    { value: "1K", label: "1K" },
+    { value: "2K", label: "2K" },
+    { value: "4K", label: "4K" },
+  ];
 
   const handleAiSend = () => {
     if (!aiPrompt.trim()) return;
@@ -134,6 +187,65 @@ export default function ToolsPanel({
               disabled={!hasImage}
             />
             <div className="flex gap-2">
+              <div className="relative">
+                <button
+                  ref={imgConfigBtnRef}
+                  onClick={openConfig}
+                  disabled={!hasImage}
+                  className={`flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-50 disabled:pointer-events-none px-2.5 py-1 border ${
+                    showImgConfig || editAspect || editSize
+                      ? "border-accent text-accent"
+                      : "border-border bg-white text-text-primary hover:bg-bg-secondary"
+                  }`}
+                >
+                  <Settings2 size={12} />
+                </button>
+                {showImgConfig && createPortal(
+                  <div
+                    className="fixed z-[100] w-52 rounded-xl border border-border bg-white shadow-lg p-3 space-y-3"
+                    style={{ top: configPos.top, left: configPos.left, transform: "translateY(-100%)" }}
+                    ref={imgConfigRef}
+                  >
+                    <div>
+                      <p className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-1">Aspect Ratio</p>
+                      <div className="flex flex-wrap gap-1">
+                        {ASPECT_OPTS.map((o) => (
+                          <button
+                            key={o.value}
+                            onClick={() => onSetEditAspect(o.value)}
+                            className={`text-[10px] px-2 py-1 rounded ${
+                              editAspect === o.value
+                                ? "bg-accent text-white"
+                                : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
+                            }`}
+                          >
+                            {o.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-1">Image Size</p>
+                      <div className="flex gap-1">
+                        {SIZE_OPTS.map((o) => (
+                          <button
+                            key={o.value}
+                            onClick={() => onSetEditSize(o.value)}
+                            className={`text-[10px] px-2 py-1 rounded ${
+                              editSize === o.value
+                                ? "bg-accent text-white"
+                                : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
+                            }`}
+                          >
+                            {o.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>,
+                  document.body
+                )}
+              </div>
               <Button size="sm" variant="secondary" onClick={onAttachImages} disabled={!hasImage}>
                 <ImagePlus size={12} />
                 Add ref

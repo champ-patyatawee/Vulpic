@@ -2,6 +2,11 @@ import type { ModelId, AIModel } from "../types/model";
 
 const BASE = "https://openrouter.ai/api/v1/chat/completions";
 
+export interface ImageConfig {
+  aspect_ratio?: string;
+  image_size?: string;
+}
+
 function buildUserMessage(text: string, imageDataUrls?: string[]) {
   const content: Array<
     | { type: "text"; text: string }
@@ -35,7 +40,20 @@ async function streamCompletion(
   model: ModelId,
   text: string,
   imageDataUrls?: string[],
+  imageConfig?: ImageConfig,
 ): Promise<string> {
+  const body: Record<string, any> = {
+    model,
+    messages: [buildUserMessage(text, imageDataUrls)],
+    modalities: ["image"],
+    stream: true,
+  };
+  if (imageConfig && (imageConfig.aspect_ratio || imageConfig.image_size)) {
+    body.image_config = {};
+    if (imageConfig.aspect_ratio) body.image_config.aspect_ratio = imageConfig.aspect_ratio;
+    if (imageConfig.image_size) body.image_config.image_size = imageConfig.image_size;
+  }
+
   const response = await fetch(BASE, {
     method: "POST",
     headers: {
@@ -44,12 +62,7 @@ async function streamCompletion(
       "HTTP-Referer": "https://vulpic.app",
       "X-Title": "Vulpic",
     },
-    body: JSON.stringify({
-      model,
-      messages: [buildUserMessage(text, imageDataUrls)],
-      modalities: ["image"],
-      stream: true,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -122,8 +135,9 @@ export async function generateImage(
   apiKey: string,
   model: ModelId,
   prompt: string,
+  imageConfig?: ImageConfig,
 ): Promise<string> {
-  const content = await streamCompletion(apiKey, model, prompt);
+  const content = await streamCompletion(apiKey, model, prompt, undefined, imageConfig);
   return extractImageFromResponse(content);
 }
 
@@ -133,6 +147,7 @@ export async function editImage(
   sourceImageDataUrl: string,
   prompt: string,
   extraImageDataUrls?: string[],
+  imageConfig?: ImageConfig,
 ): Promise<string> {
   const imageDataUrls = [sourceImageDataUrl, ...(extraImageDataUrls ?? [])];
   const content = await streamCompletion(
@@ -140,6 +155,7 @@ export async function editImage(
     model,
     prompt,
     imageDataUrls,
+    imageConfig,
   );
   return extractImageFromResponse(content);
 }
