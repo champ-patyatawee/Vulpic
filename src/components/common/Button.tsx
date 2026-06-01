@@ -20,7 +20,7 @@ export default function Button({
         "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-50 disabled:pointer-events-none",
         {
           primary: "bg-accent text-white hover:bg-accent-hover",
-          secondary: "border border-border bg-white text-text-primary hover:bg-bg-secondary",
+          secondary: "border border-border bg-surface text-text-primary hover:bg-bg-secondary",
           ghost: "text-text-secondary hover:bg-bg-secondary hover:text-text-primary",
           danger: "bg-danger/10 text-danger hover:bg-danger/20",
         }[variant],

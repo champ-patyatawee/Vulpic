@@ -81,7 +81,7 @@ export default function Editor() {
 
       {/* Preview */}
       <div className="flex flex-1 items-center justify-center overflow-hidden bg-black/5 p-6">
-        <div className="max-h-full max-w-full overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+        <div className="max-h-full max-w-full overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
           <img
             ref={imgRef}
             src={imageDataUrl}

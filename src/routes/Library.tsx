@@ -134,7 +134,7 @@ export default function Library() {
               return (
                 <div
                   key={entry.id}
-                  className="flex flex-col overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-shadow hover:shadow-md"
+                  className="flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md"
                 >
                   <div className="block aspect-[4/3] overflow-hidden bg-bg-secondary">
                     {imgFailed ? (

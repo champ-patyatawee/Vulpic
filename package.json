@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build:x64": "tauri build --target x86_64-apple-darwin",
+    "build:arm64": "tauri build --target aarch64-apple-darwin",
+    "build:universal": "tauri build --target universal-apple-darwin",
+    "build:mac": "pnpm build:arm64 && pnpm build:x64 && pnpm build:universal",
+    "build:win": "tauri build"
   },
   "dependencies": {
     "@openrouter/sdk": "^0.12.35",

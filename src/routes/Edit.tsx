@@ -658,7 +658,7 @@ export default function Edit() {
         <div className="flex flex-1 flex-col overflow-hidden bg-[#e8e8e8]">
           <div className="flex flex-1 items-center justify-center p-4">
             {fullResUrl || selectedImage ? (
-              <div className="relative max-h-full max-w-full overflow-hidden rounded-xl bg-white shadow-md">
+              <div className="relative max-h-full max-w-full overflow-hidden rounded-xl bg-surface shadow-md">
                 <img
                   id="preview-img"
                   src={fullResUrl ?? selectedImage!.dataUrl}
@@ -705,11 +705,11 @@ export default function Edit() {
                       }}
                     >
                       {/* Vertical lines */}
-                      <div className="absolute top-0 bottom-0 w-px bg-white/30" style={{ left: "33.33%" }} />
-                      <div className="absolute top-0 bottom-0 w-px bg-white/30" style={{ left: "66.66%" }} />
+                      <div className="absolute top-0 bottom-0 w-px bg-surface/30" style={{ left: "33.33%" }} />
+                      <div className="absolute top-0 bottom-0 w-px bg-surface/30" style={{ left: "66.66%" }} />
                       {/* Horizontal lines */}
-                      <div className="absolute left-0 right-0 h-px bg-white/30" style={{ top: "33.33%" }} />
-                      <div className="absolute left-0 right-0 h-px bg-white/30" style={{ top: "66.66%" }} />
+                      <div className="absolute left-0 right-0 h-px bg-surface/30" style={{ top: "33.33%" }} />
+                      <div className="absolute left-0 right-0 h-px bg-surface/30" style={{ top: "66.66%" }} />
                     </div>
 
                     {/* Drag handles (corners + edges) */}
@@ -763,7 +763,7 @@ export default function Edit() {
               <div className="relative" ref={sortRef}>
                 <button
                   onClick={() => setShowSort(!showSort)}
-                  className="flex items-center gap-1 text-[11px] text-text-secondary hover:text-text-primary transition-colors rounded-md border border-border bg-white px-2 py-1"
+                  className="flex items-center gap-1 text-[11px] text-text-secondary hover:text-text-primary transition-colors rounded-md border border-border bg-surface px-2 py-1"
                 >
                   {currentSortLabel}
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`transition-transform ${showSort ? "rotate-180" : ""}`}>
@@ -771,7 +771,7 @@ export default function Edit() {
                   </svg>
                 </button>
                 {showSort && (
-                  <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-border bg-white shadow-lg overflow-hidden">
+                  <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-border bg-surface shadow-lg overflow-hidden">
                     {SORT_OPTIONS.map((o) => (
                       <button
                         key={o.value}

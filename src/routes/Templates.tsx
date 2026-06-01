@@ -171,7 +171,7 @@ export default function Templates() {
                 value={idea}
                 onChange={(e) => setIdea(e.target.value)}
                 placeholder="Got an idea? Type it here (optional)..."
-                className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors placeholder:text-text-tertiary"
+                className="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors placeholder:text-text-tertiary"
               />
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function Templates() {
                   key={tpl.id}
                   onClick={() => handleGenerate(tpl)}
                   disabled={generatingId !== null}
-                  className="flex flex-col items-center gap-2.5 p-5 rounded-xl border border-border bg-white hover:bg-bg-secondary hover:shadow-sm transition-all text-center disabled:opacity-50"
+                  className="flex flex-col items-center gap-2.5 p-5 rounded-xl border border-border bg-surface hover:bg-bg-secondary hover:shadow-sm transition-all text-center disabled:opacity-50"
                 >
                   <div
                     className="w-12 h-12 rounded-xl flex items-center justify-center"
@@ -205,7 +205,7 @@ export default function Templates() {
               <h2 className="text-sm font-medium text-text-primary mb-4">Generated Templates ({saved.length})</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {saved.map((r) => (
-                  <div key={r.id} className="rounded-xl border border-border bg-white overflow-hidden">
+                  <div key={r.id} className="rounded-xl border border-border bg-surface overflow-hidden">
                     {/* Image */}
                     <div className="aspect-[4/5] bg-bg-secondary relative flex items-center justify-center overflow-hidden">
                       {generatingId === r.id && !r.dataUrl ? (
@@ -223,7 +223,7 @@ export default function Templates() {
                           />
                           <button
                             onClick={() => handleSaveImage(r.dataUrl, r.itemName)}
-                            className="absolute bottom-2 right-2 bg-white/90 backdrop-blur rounded-lg px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-white transition-colors flex items-center gap-1.5 shadow-sm"
+                            className="absolute bottom-2 right-2 bg-surface/90 backdrop-blur rounded-lg px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface transition-colors flex items-center gap-1.5 shadow-sm"
                           >
                             <Download size={12} />
                             Save Image
@@ -278,7 +278,7 @@ export default function Templates() {
             />
             <button
               onClick={() => setPreviewUrl(null)}
-              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-sm text-text-primary hover:bg-bg-secondary transition-colors"
+              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-surface shadow-md flex items-center justify-center text-sm text-text-primary hover:bg-bg-secondary transition-colors"
             >
               ✕
             </button>

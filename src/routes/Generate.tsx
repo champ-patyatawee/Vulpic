@@ -210,7 +210,7 @@ export default function Generate() {
                   const imgContent = msg.content.find((c) => c.type === "image");
                   if (imgContent) {
                     return (
-                      <div className="max-w-md rounded-xl border border-border bg-white p-3 shadow-sm">
+                      <div className="max-w-md rounded-xl border border-border bg-surface p-3 shadow-sm">
                         <img
                           src={imgContent.dataUrl}
                           alt="Generated"
@@ -258,70 +258,23 @@ export default function Generate() {
               </div>
             )}
 
-            <div className="flex gap-2">
-              <div className="relative" ref={configRef}>
-                <button
-                  onClick={() => setShowConfig(!showConfig)}
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border transition-colors ${
-                    showConfig || aspectRatio || imageSize
-                      ? "border-accent text-accent bg-accent/5"
-                      : "border-border text-text-tertiary hover:bg-bg-secondary hover:text-text-primary"
-                  }`}
-                  title="Image settings"
-                >
-                  <Settings2 size={16} />
-                </button>
-                {showConfig && (
-                  <div className="absolute bottom-full left-0 mb-2 z-50 w-56 rounded-xl border border-border bg-white shadow-lg p-3 space-y-3">
-                    <div>
-                      <p className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">Aspect Ratio</p>
-                      <div className="flex flex-wrap gap-1">
-                        {ASPECT_OPTIONS.map((o) => (
-                          <button
-                            key={o.value}
-                            onClick={() => setAspectRatio(o.value)}
-                            className={`text-[11px] px-2 py-1 rounded ${
-                              aspectRatio === o.value
-                                ? "bg-accent text-white"
-                                : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
-                            }`}
-                          >
-                            {o.label}
-                          </button>
-                        ))}
-                      </div>
+            <div className="flex flex-col gap-2">
+              {/* Ref image thumbnails */}
+              {refImages.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {refImages.map((img, i) => (
+                    <div key={i} className="relative h-12 w-12">
+                      <img src={img.dataUrl} alt="" className="h-full w-full rounded-lg border border-border object-cover" />
+                      <button
+                        onClick={() => setRefImages((prev) => prev.filter((_, j) => j !== i))}
+                        className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-white text-[10px] leading-none"
+                      >×</button>
                     </div>
-                    <div>
-                      <p className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">Image Size</p>
-                      <div className="flex gap-1">
-                        {SIZE_OPTIONS.map((o) => (
-                          <button
-                            key={o.value}
-                            onClick={() => setImageSize(o.value)}
-                            className={`text-[11px] px-2 py-1 rounded ${
-                              imageSize === o.value
-                                ? "bg-accent text-white"
-                                : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
-                            }`}
-                          >
-                            {o.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
 
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-border text-text-tertiary hover:bg-bg-secondary hover:text-text-primary transition-colors"
-                title="Attach reference image"
-              >
-                <ImagePlus size={18} />
-              </button>
-              <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleAttach} />
-
+              {/* Textarea - fixed 5 rows, scrollable */}
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -332,23 +285,90 @@ export default function Generate() {
                   }
                 }}
                 placeholder={refImages.length > 0 ? "Describe the edit you want..." : "Describe the image you want to create..."}
-                className="flex-1 resize-none rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
-                rows={1}
-                style={{ minHeight: 42, maxHeight: 120 }}
+                className="w-full resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                rows={5}
                 disabled={loading}
-                onInput={(e) => {
-                  const el = e.currentTarget;
-                  el.style.height = "auto";
-                  el.style.height = Math.min(el.scrollHeight, 120) + "px";
-                }}
               />
-              <button
-                onClick={handleSend}
-                disabled={loading || (!prompt.trim() && refImages.length === 0)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl bg-accent text-white hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <Send size={16} />
-              </button>
+
+              {/* Toolbar row */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {/* Config icon */}
+                  <div className="relative" ref={configRef}>
+                    <button
+                      onClick={() => setShowConfig(!showConfig)}
+                      className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+                        showConfig || aspectRatio || imageSize
+                          ? "border-accent text-accent bg-accent/5"
+                          : "border-border text-text-tertiary hover:bg-bg-secondary hover:text-text-primary"
+                      }`}
+                      title="Image settings"
+                    >
+                      <Settings2 size={15} />
+                    </button>
+                    {showConfig && (
+                      <div className="absolute bottom-full left-0 mb-2 z-50 w-56 rounded-xl border border-border bg-surface shadow-lg p-3 space-y-3">
+                        <div>
+                          <p className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">Aspect Ratio</p>
+                          <div className="flex flex-wrap gap-1">
+                            {ASPECT_OPTIONS.map((o) => (
+                              <button
+                                key={o.value}
+                                onClick={() => setAspectRatio(o.value)}
+                                className={`text-[11px] px-2 py-1 rounded ${
+                                  aspectRatio === o.value
+                                    ? "bg-accent text-white"
+                                    : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
+                                }`}
+                              >
+                                {o.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">Image Size</p>
+                          <div className="flex gap-1">
+                            {SIZE_OPTIONS.map((o) => (
+                              <button
+                                key={o.value}
+                                onClick={() => setImageSize(o.value)}
+                                className={`text-[11px] px-2 py-1 rounded ${
+                                  imageSize === o.value
+                                    ? "bg-accent text-white"
+                                    : "bg-bg-secondary text-text-secondary hover:bg-bg-tertiary"
+                                }`}
+                              >
+                                {o.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Attach image */}
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-tertiary hover:bg-bg-secondary hover:text-text-primary transition-colors"
+                    title="Attach reference image"
+                  >
+                    <ImagePlus size={16} />
+                  </button>
+                  <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleAttach} />
+                </div>
+
+                {/* Send button */}
+                <button
+                  onClick={handleSend}
+                  disabled={loading || (!prompt.trim() && refImages.length === 0)}
+                  className="flex h-9 items-center gap-1.5 rounded-lg bg-accent text-white px-4 hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                >
+                  <Send size={15} />
+                  Send
+                </button>
+              </div>
             </div>
           </div>
         </div>

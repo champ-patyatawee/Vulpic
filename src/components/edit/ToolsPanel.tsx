@@ -182,7 +182,7 @@ export default function ToolsPanel({
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder="Describe the edit you want..."
-              className="w-full resize-none rounded-lg border border-border bg-white px-3 py-2 text-xs text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent transition-colors"
+              className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent transition-colors"
               rows={3}
               disabled={!hasImage}
             />
@@ -195,14 +195,14 @@ export default function ToolsPanel({
                   className={`flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-50 disabled:pointer-events-none px-2.5 py-1 border ${
                     showImgConfig || editAspect || editSize
                       ? "border-accent text-accent"
-                      : "border-border bg-white text-text-primary hover:bg-bg-secondary"
+                      : "border-border bg-surface text-text-primary hover:bg-bg-secondary"
                   }`}
                 >
                   <Settings2 size={12} />
                 </button>
                 {showImgConfig && createPortal(
                   <div
-                    className="fixed z-[100] w-52 rounded-xl border border-border bg-white shadow-lg p-3 space-y-3"
+                    className="fixed z-[100] w-52 rounded-xl border border-border bg-surface shadow-lg p-3 space-y-3"
                     style={{ top: configPos.top, left: configPos.left, transform: "translateY(-100%)" }}
                     ref={imgConfigRef}
                   >

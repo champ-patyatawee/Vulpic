@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/layout/Sidebar";
 import ContentArea from "./components/layout/ContentArea";
@@ -7,8 +8,19 @@ import Edit from "./routes/Edit";
 import Library from "./routes/Library";
 import Templates from "./routes/Templates";
 import Settings from "./routes/Settings";
+import { useSettingsStore } from "./stores/settingsStore";
 
 function App() {
+  const theme = useSettingsStore((s) => s.theme);
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bg-primary">
       <Sidebar />

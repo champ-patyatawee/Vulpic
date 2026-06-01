@@ -58,7 +58,7 @@ export default function ModelSelector({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-border bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-border bg-surface shadow-lg">
           {/* Search */}
           <div className="flex items-center gap-2 border-b border-border px-3 py-2">
             <Search size={14} className="text-text-tertiary shrink-0" />

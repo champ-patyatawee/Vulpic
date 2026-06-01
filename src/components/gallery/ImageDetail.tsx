@@ -29,7 +29,7 @@ export default function ImageDetail({
   return (
     <div className="flex flex-col gap-4">
       {/* Large preview */}
-      <div className="overflow-hidden rounded-xl border border-border bg-white">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
         <img
           src={fullDataUrl ?? image.dataUrl}
           alt={image.name}
