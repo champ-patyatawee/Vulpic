@@ -5,8 +5,8 @@ on:
       - "v*"
 
 jobs:
-  mac-arm64:
-    name: macOS ARM64
+  mac:
+    name: macOS
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,30 +15,16 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with: { target: aarch64-apple-darwin }
+        with:
+          target: aarch64-apple-darwin
+          override: false
+          rustflags: ""
       - run: pnpm install
       - run: pnpm tauri build --target aarch64-apple-darwin
       - uses: softprops/action-gh-release@v2
         with:
           files: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
           generate_release_notes: true
-
-  mac-x64:
-    name: macOS Intel
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with: { version: latest }
-      - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with: { target: x86_64-apple-darwin }
-      - run: pnpm install
-      - run: pnpm tauri build --target x86_64-apple-darwin
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
 
   windows:
     name: Windows
@@ -50,7 +36,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with: { target: x86_64-pc-windows-msvc }
+        with:
+          target: x86_64-pc-windows-msvc
+          override: false
+          rustflags: ""
       - run: pnpm install
       - run: pnpm tauri build
       - uses: softprops/action-gh-release@v2
@@ -69,7 +58,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with: { target: x86_64-unknown-linux-gnu }
+        with:
+          target: x86_64-unknown-linux-gnu
+          override: false
+          rustflags: ""
       - name: Install dependencies
         run: |
           sudo apt-get update
