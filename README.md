@@ -1,5 +1,7 @@
 # Vulpic — AI Image Editor & Design Studio
 
+<video src="https://github.com/champ-patyatawee/Vulpic/raw/main/preview.mp4" controls width="100%" style="max-width:720px"></video>
+
 **Vulpic** is a free, open-source desktop app that combines AI Generate, edit, and design images with AI — no subscriptions, no lock-in, just your own API key.
 
 **Pay as you go, not per month.** Bring your own API key — you pay only for the images you generate, typically cents per image. No subscription, no monthly bill, no feature gates.
@@ -33,7 +35,7 @@
 
 ## Quick Start
 
-<video src="https://github.com/champ-patyatawee/Vulpic/raw/main/preview.mp4" controls width="100%" style="max-width:720px"></video>
+
 
 **Download the latest release:**
 [https://github.com/champ-patyatawee/Vulpic/releases](https://github.com/champ-patyatawee/Vulpic/releases)
