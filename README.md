@@ -16,26 +16,26 @@ AI image tools are even worse — no editing capabilities, web-only access, rate
 
 ### What You Can Do
 
-#### 🎨 Generate Images
+#### Generate Images
 - Text-to-image using top AI models (GPT-5, Gemini, Seedream, FLUX, etc.)
 - Reference image editing (upload an image + describe the edit)
 - Configurable aspect ratio (1:1, 16:9, 9:16, 4:3, etc.) and resolution (1K–4K)
 - Chat-style interface with persistent history
 
-#### ✏️ Edit Images Locally
+#### Edit Images Locally
 - **Crop** with Canva-style drag handles, rule-of-thirds guides, aspect ratio presets
 - **Rotate** (90°, 180°, 270°) and **Flip** (horizontal/vertical)
 - **Filters** (brightness, contrast, sepia, grayscale, blur, and more)
 - **AI Edit** — describe changes with text, and AI applies them
 - Gallery view with sort by date, name, or file modification time
 
-#### 📐 Design Templates
+#### Design Templates
 - Generate design variations from templates: Posters, Logos, Branding, Infographics, Product Mockups, Ads Creative
 - AI writes the design prompt → you pick which to render
 - Prompt text is copyable, results are auto-saved
 - No design skills needed
 
-#### 🔒 Privacy & Ownership
+#### Privacy & Ownership
 - Everything runs locally on your machine
 - Your API key stays on your device
 - Images store on your disk — not in someone's cloud
