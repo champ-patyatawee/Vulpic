@@ -4,6 +4,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   mac-universal:
     name: macOS Universal
@@ -23,6 +26,8 @@ jobs:
         with:
           files: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   windows:
     name: Windows
