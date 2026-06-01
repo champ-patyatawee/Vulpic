@@ -134,7 +134,7 @@ export default function Generate() {
       updateMessage(convId, loadingMsgId, {
         id: loadingMsgId,
         role: "assistant",
-        content: [{ type: "image", dataUrl: resultUrl, name: "vulpic-edit" }],
+        content: [{ type: "image", dataUrl: resultUrl, name: `vulpic-${Date.now()}` }],
         createdAt: now,
       });
     } catch (err) {

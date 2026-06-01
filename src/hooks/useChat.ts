@@ -69,7 +69,7 @@ export function useChat() {
             {
               type: "image",
               dataUrl: result,
-              name: "vulpic-edit",
+              name: `vulpic-${Date.now()}`,
             },
           ],
           createdAt: Date.now(),

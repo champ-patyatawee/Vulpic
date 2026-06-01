@@ -10,6 +10,7 @@ import { readGalleryFolder } from "../services/tauriCommands";
 import { editImage } from "../services/openrouter";
 import { applyFilter } from "../services/imageFilters";
 import { saveImage } from "../services/tauriCommands";
+import { editImageTransfer } from "../components/editor/ResultActions";
 
 
 const EXT_TO_MIME: Record<string, string> = {
@@ -190,6 +191,14 @@ export default function Edit() {
   const [fullResUrl, setFullResUrl] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Handle incoming image from navigation state (e.g. from Generate page)
+  useEffect(() => {
+    if (editImageTransfer.value) {
+      setFullResUrl(editImageTransfer.value);
+      editImageTransfer.value = null;
+    }
+  }, []);
+
   // Attached reference images for AI Edit
   const [attachedImages, setAttachedImages] = useState<{ dataUrl: string; name: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -358,7 +367,7 @@ export default function Edit() {
 
   // ---- Apply crop ----
   const handleApplyCrop = useCallback(async () => {
-    if (!cropRect || !selectedImage) return;
+    if (!cropRect || !(selectedImage || fullResUrl)) return;
     const imgEl = document.getElementById("preview-img") as HTMLImageElement | null;
     const overlay = previewRef.current;
     if (!imgEl || !overlay) return;
@@ -382,7 +391,8 @@ export default function Edit() {
       return;
     }
 
-    const src = fullResUrl ?? selectedImage.dataUrl;
+    const src = fullResUrl ?? selectedImage?.dataUrl ?? "";
+    if (!src) return;
     const img = await loadImage(src);
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(sw);
@@ -435,7 +445,7 @@ export default function Edit() {
 
   // Load full-res when image selected
   useEffect(() => {
-    if (!selectedImage) { setFullResUrl(null); return; }
+    if (!selectedImage) { return; }
     let cancelled = false;
     setFullResUrl(null);
     (async () => {
@@ -531,10 +541,10 @@ export default function Edit() {
   }, []);
 
   const handleAiEdit = useCallback(async (prompt: string) => {
-    if (!apiKey || !selectedImage) return;
+    if (!apiKey || !(selectedImage || fullResUrl)) return;
     setAiLoading(true);
     try {
-      const source = fullResUrl ?? selectedImage.dataUrl;
+      const source = fullResUrl ?? selectedImage?.dataUrl ?? "";
       const extraImages = attachedImages.map((img) => img.dataUrl);
       const model = useSettingsStore.getState().editModel;
       const imgConfig: import("../services/openrouter").ImageConfig = {};
@@ -800,7 +810,7 @@ export default function Edit() {
         {/* Right: tools panel */}
         <div className="w-72 shrink-0">
           <ToolsPanel
-            hasImage={!!selectedImage}
+            hasImage={!!(selectedImage || fullResUrl)}
             attachedImages={attachedImages}
             onAttachImages={() => fileInputRef.current?.click()}
             onRemoveAttachedImage={removeAttachedImage}
