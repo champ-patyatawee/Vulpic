@@ -5,67 +5,81 @@ on:
       - "v*"
 
 jobs:
-  build:
-    name: Build ${{ matrix.label }}
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            target: universal-apple-darwin
-            label: mac-universal
-            ext: dmg
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            label: windows
-            ext: msi
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            label: linux
-            ext: AppImage
-    runs-on: ${{ matrix.os }}
+  mac-arm64:
+    name: macOS ARM64
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: latest }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with: { target: aarch64-apple-darwin }
+      - run: pnpm install
+      - run: pnpm tauri build --target aarch64-apple-darwin
+      - uses: softprops/action-gh-release@v2
         with:
-          version: latest
+          files: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+          generate_release_notes: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+  mac-x64:
+    name: macOS Intel
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: latest }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with: { target: x86_64-apple-darwin }
+      - run: pnpm install
+      - run: pnpm tauri build --target x86_64-apple-darwin
+      - uses: softprops/action-gh-release@v2
         with:
-          node-version: 22
-          cache: pnpm
+          files: src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
 
-      - name: Setup Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: latest }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with: { target: x86_64-pc-windows-msvc }
+      - run: pnpm install
+      - run: pnpm tauri build
+      - uses: softprops/action-gh-release@v2
         with:
-          target: ${{ matrix.target }}
+          files: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/nsis/*.exe
 
-      - name: Install dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: latest }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with: { target: x86_64-unknown-linux-gnu }
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev \
             librsvg2-dev patchelf libgtk-3-dev libjavascriptcoregtk-4.1-dev \
             libsoup-3.0-dev
-
-      - name: Install pnpm deps
-        run: pnpm install
-
-      - name: Build
-        run: pnpm tauri build --target ${{ matrix.target }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: vulpic-${{ matrix.label }}
-          path: |
-            src-tauri/target/${{ matrix.target }}/release/bundle/
-
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v2
+      - run: pnpm install
+      - run: pnpm tauri build
+      - uses: softprops/action-gh-release@v2
         with:
           files: |
-            src-tauri/target/${{ matrix.target }}/release/bundle/**/*.${{ matrix.ext }}
-          generate_release_notes: true
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/deb/*.deb
