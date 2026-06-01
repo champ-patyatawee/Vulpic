@@ -47,6 +47,8 @@ AI image tools are even worse — no editing capabilities, web-only access, rate
 [https://github.com/champ-patyatawee/Vulpic/releases](https://github.com/champ-patyatawee/Vulpic/releases)
 
 Or build from source:
+
+```bash
 git clone https://github.com/champ-patyatawee/Vulpic.git
 cd Vulpic
 npm install
