@@ -1,18 +1,8 @@
 # Vulpic — AI Image Editor & Design Studio
 
-**Generate, edit, and design images with AI — no subscriptions, no lock-in, just your own API key.**
+**Vulpic** is a free, open-source desktop app that combines AI Generate, edit, and design images with AI — no subscriptions, no lock-in, just your own API key.
 
-## The Problem
-
-Design tools lock you into expensive subscriptions — Adobe ($50+/mo), Canva Pro ($13/mo), and AI image generators (Midjourney $10–$120/mo, ChatGPT $20/mo). You pay monthly forever and never own the software.
-
-AI image tools are even worse — no editing capabilities, web-only access, rate-limited free tiers, and no way to combine generation + editing in one workflow.
-
-## The Solution
-
-**Vulpic** is a free, open-source desktop app that combines AI image generation, AI editing, and local image editing in one place.
-
-**Pay as you go, not per month.** Bring your own API key from OpenRouter — you pay only for the images you generate, typically cents per image. No subscription, no monthly bill, no feature gates.
+**Pay as you go, not per month.** Bring your own API key — you pay only for the images you generate, typically cents per image. No subscription, no monthly bill, no feature gates.
 
 ### What You Can Do
 
@@ -42,6 +32,8 @@ AI image tools are even worse — no editing capabilities, web-only access, rate
 - Open source (MIT) — no lock-in, ever
 
 ## Quick Start
+
+<video src="https://github.com/champ-patyatawee/Vulpic/raw/main/preview.mp4" controls width="100%" style="max-width:720px"></video>
 
 **Download the latest release:**
 [https://github.com/champ-patyatawee/Vulpic/releases](https://github.com/champ-patyatawee/Vulpic/releases)
