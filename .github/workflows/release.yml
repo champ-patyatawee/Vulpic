@@ -5,8 +5,8 @@ on:
       - "v*"
 
 jobs:
-  mac-arm64:
-    name: macOS ARM64
+  mac-universal:
+    name: macOS Universal
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,32 +14,15 @@ jobs:
         with: { node-version: 22, cache: npm }
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          target: aarch64-apple-darwin
+          target: aarch64-apple-darwin,x86_64-apple-darwin
           override: false
           rustflags: ""
       - run: npm install
-      - run: npx tauri build --target aarch64-apple-darwin
+      - run: npx tauri build --target universal-apple-darwin
       - uses: softprops/action-gh-release@v2
         with:
-          files: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
-
-  mac-x64:
-    name: macOS Intel
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: npm }
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          target: x86_64-apple-darwin
-          override: false
-          rustflags: ""
-      - run: npm install
-      - run: npx tauri build --target x86_64-apple-darwin
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+          files: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          generate_release_notes: true
 
   windows:
     name: Windows
